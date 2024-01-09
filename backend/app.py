@@ -148,7 +148,55 @@ def return_book():
         loan.ReturnDate = data['ReturnDate']
         db.session.commit()
         return jsonify({'message': 'Book returned successfully'})
-        
+
+@app.route("/search_book", methods=['POST'])
+def search_book():
+    if request.method == 'POST':
+        data = request.get_json()
+        book = Books.query.filter_by(book.name).first()
+        book_data = {
+            'id': book.bookID,
+            'name': book.name,
+            'author': book.author,
+            'year_published': book.year_published,
+            'Type': book.Type
+        }
+        return jsonify({'book': book_data})
+    
+@app.route("/search_customer", methods=['POST'])
+def search_customer():
+    if request.method == 'POST':
+        data = request.get_json()
+        customer = Customers.query.filter_by(customer.name).first()
+        customer_data = {
+            'id': customer.custID,
+            'name': customer.name,
+            'city': customer.city,
+            'age': customer.age,
+            # 'password': <PASSWORD>
+        }
+        return jsonify({'customer': customer_data})
+# display late loans
+@app.route("/display_late_loans", methods=['GET'])
+def display_late_loans():
+    pass
+
+# unit test - create a test book
+@app.route("/book_test", methods=['POST'])
+def book_test():
+    pass
+
+# unit test - create a test customer
+@app.route("/customer_test", methods=['POST'])
+def customer_test():
+    pass
+
+# unit test - create a test loan
+@app.route("/loan_test", methods=['POST'])
+def loan_test():
+    pass
+
+
 
 # entry point of the app 
 if __name__ == "__main__":
