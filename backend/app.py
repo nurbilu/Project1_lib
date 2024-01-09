@@ -1,12 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from datetime import date
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://user:MYSQL@localhost/library'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
 
 # set models 
 class Books(db.Model):
@@ -45,7 +45,7 @@ def show_books():
 
         for book in books:
             book_data = {
-                'id': book.bookID,
+                'bookID': book.bookID,
                 'name': book.name,
                 'author': book.author,
                 'year_published': book.year_published,
@@ -85,7 +85,7 @@ def show_customers():
         customer_list = []
         for customer in customers:
             customer_data = {
-                'id': customer.custID,
+                'customerID': customer.custID,
                 'name': customer.name,
                 'city': customer.city,
                 'age': customer.age,
@@ -157,7 +157,7 @@ def search_book():
         data = request.get_json()
         book = Books.query.filter_by(book.name).first()
         book_data = {
-            'id': book.bookID,
+            'bookID': book.bookID,
             'name': book.name,
             'author': book.author,
             'year_published': book.year_published,
@@ -178,15 +178,43 @@ def search_customer():
             # 'password': <PASSWORD>
         }
         return jsonify({'customer': customer_data})
+    
 # display late loans
 @app.route("/display_late_loans", methods=['GET'])
 def display_late_loans():
-    pass
+    today = date.today()
+    late_loans = Loans.query.filter(Loans.ReturnDate < today).all()
+    late_loan_list = []
+
+    for loan in late_loans:
+        late_loan_data = {
+            'id': loan.loanID,
+            'custID': loan.custID,
+            'bookID': loan.bookID,
+            'LoanDate': loan.LoanDate,
+            'ReturnDate': loan.ReturnDate
+        }
+        late_loan_list.append(late_loan_data)
+
+    return jsonify({'late_loans': late_loan_list})
 
 # unit test - create a test book
 @app.route("/book_test", methods=['POST'])
 def book_test():
-    pass
+    test_book_data = {
+    "name": "Test Book",
+    "author": "Test Author",
+    "year_published": 2022,
+    "Type": "Fiction"
+}
+
+
+    test_book = Books(**test_book_data)
+    db.session.add(test_book)
+    db.session.commit()
+
+    return jsonify({'message': 'Test book created successfully'})
+
 
 # unit test - create a test customer
 @app.route("/customer_test", methods=['POST'])
