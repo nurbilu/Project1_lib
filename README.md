@@ -3,3 +3,4 @@
     a full readme would be added when program is finished
 
 ### will be finished no more than the 21/01/2024
+    remember to change user and pwd in the program
