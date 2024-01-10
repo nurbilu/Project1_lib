@@ -13,7 +13,7 @@ class Books(db.Model):
     bookID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     author = db.Column(db.Text)
-    year_published = db.Column(db.Integer)
+    year_published = db.Column(db.Integer, nullable=False)
     Type = db.Column(db.String(10))
     
 class Customers(db.Model):
@@ -201,30 +201,70 @@ def display_late_loans():
 # unit test - create a test book
 @app.route("/book_test", methods=['POST'])
 def book_test():
-    test_book_data = {
-    "name": "Test Book",
-    "author": "Test Author",
-    "year_published": 2022,
-    "Type": "Fiction"
-}
+    if request.method == 'POST':
+        test_book_data = {
+        "name": "Test Book",
+        "author": "Test Author",
+        "year_published": 2023,
+        "Type": "2 days"
+    }
 
 
-    test_book = Books(**test_book_data)
-    db.session.add(test_book)
-    db.session.commit()
+        test_book = Books(
+            name=test_book_data['name'],
+            author=test_book_data['author'],
+            year_published=test_book_data['year_published'],
+            Type=test_book_data['Type']
+        )
 
-    return jsonify({'message': 'Test book created successfully'})
+        db.session.add(test_book)
+        db.session.commit()
 
+        return jsonify({'message': 'Test book added successfully'})
 
 # unit test - create a test customer
 @app.route("/customer_test", methods=['POST'])
 def customer_test():
-    pass
+    if request.method == 'POST':
+        test_customer_data = {
+        "name": "<NAME>",
+        "city": "Test City",
+        "age": 20,
+        "password": "<PASSWORD>"
+    }   
+        test_customer = Customers(
+            name=test_customer_data['name'],
+            city=test_customer_data['city'],
+            age=test_customer_data['age'],
+            password=test_customer_data['password']
+        )   
+        db.session.add(test_customer)
+        db.session.commit()
+        return jsonify({'message': 'Test customer added successfully'})
+
 
 # unit test - create a test loan
 @app.route("/loan_test", methods=['POST'])
 def loan_test():
-    pass
+    if request.method == 'POST':
+        test_loan_data = {
+        "loanID": 1,
+        "custID": 1,
+        "bookID": 1,
+        "LoanDate": "2021-01-01",
+        "ReturnDate": "2021-01-02"
+    }
+        test_loan = Loans(
+            loanID=test_loan_data['loanID'],
+            custID=test_loan_data['custID'],
+            bookID=test_loan_data['bookID'],
+            LoanDate=test_loan_data['LoanDate'],
+            ReturnDate=test_loan_data['ReturnDate']
+        )
+        db.session.add(test_loan)
+        db.session.commit()
+        return jsonify({'message': 'Test loan added successfully'})
+
 
 
 
