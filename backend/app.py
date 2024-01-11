@@ -1,5 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Resource, Api
+import sqlite3
 from datetime import date
 
 app = Flask(__name__)
@@ -110,7 +112,8 @@ def add_customer():
         db.session.add(new_customer)
         db.session.commit()
         return jsonify({'message': 'Customer added successfully'})
-    
+ 
+# show all loans
 @app.route("/show_loans", methods=['GET'])
 def show_loans():
     if request.method == 'GET':
@@ -126,7 +129,8 @@ def show_loans():
             }
             loan_list.append(loan_data)
         return jsonify({'loans': loan_list})
-    
+
+# add new loan to table loans
 @app.route("/loan_book", methods=['POST'])
 def loan_book():
     if request.method == 'POST':
@@ -142,42 +146,76 @@ def loan_book():
         db.session.commit()
         return jsonify({'message': 'Book loaned successfully'})
 
+# return book and delete loan from db 
 @app.route("/return_book", methods=['POST'])
 def return_book():
     if request.method == 'POST':
         data = request.get_json()
-        loan = Loans.query.filter_by(loanID=data['loanID']).first()
-        loan.ReturnDate = data['ReturnDate']
-        db.session.commit()
-        return jsonify({'message': 'Book returned successfully'})
+        book_name = data.get('book_name')
+        customer_name = data.get('customer_name')
+        
+        if not book_name or not customer_name:
+            return jsonify({'message': 'Invalid request. Please provide both book_name and customer_name in the request.'}), 400
+        book = Books.query.filter_by(name=book_name).first()
+        customer = Customers.query.filter_by(name=customer_name).first()
 
-@app.route("/search_book", methods=['POST'])
+        if not book or not customer:
+            return jsonify({'message': 'Book or customer not found.'}), 404
+
+        loan = Loans.query.filter_by(bookID=book.bookID, custID=customer.custID).first()
+
+        if not loan:
+            return jsonify({'message': 'Loan not found.'}), 404
+
+        return_date = data.get('ReturnDate')
+
+        if return_date:
+            loan.ReturnDate = return_date
+            db.session.commit()
+            
+            db.session.delete(loan)
+            db.session.commit()
+
+            return jsonify({'message': 'Book returned successfully and loan deleted.'})
+        else:
+            return jsonify({'message': 'Invalid request. Please provide ReturnDate in the request.'}), 400
+
+# search book by name
+@app.route("/search_book/", methods=['POST'])
 def search_book():
     if request.method == 'POST':
         data = request.get_json()
-        book = Books.query.filter_by(book.name).first()
-        book_data = {
-            'bookID': book.bookID,
-            'name': book.name,
-            'author': book.author,
-            'year_published': book.year_published,
-            'Type': book.Type
-        }
-        return jsonify({'book': book_data})
-    
-@app.route("/search_customer", methods=['POST'])
+        book = Books.query.filter_by(name=data['name']).first()
+        if book:
+            book_data = {
+                'bookID': book.bookID,
+                'name': book.name,
+                'author': book.author,
+                'year_published': book.year_published,
+                'Type': book.Type
+            }
+            return jsonify({'book': book_data})
+        else:
+            return jsonify({'message': 'Book not found'})
+
+# search customer by name 
+@app.route("/search_customer/", methods=['POST'])
 def search_customer():
     if request.method == 'POST':
         data = request.get_json()
-        customer = Customers.query.filter_by(customer.name).first()
-        customer_data = {
-            'id': customer.custID,
-            'name': customer.name,
-            'city': customer.city,
-            'age': customer.age,
-            # 'password': <PASSWORD>
-        }
-        return jsonify({'customer': customer_data})
+        customer = Customers.query.filter_by(name=data['name']).first()
+        if customer:
+            customer_data = {
+                'id': customer.custID,
+                'name': customer.name,
+                'city': customer.city,
+                'age': customer.age,
+                # 'password': <PASSWORD>
+            }
+            return jsonify({'customer': customer_data})
+        else:
+            return jsonify({'message': 'Customer not found'})
+
     
 # display late loans
 @app.route("/display_late_loans", methods=['GET'])
