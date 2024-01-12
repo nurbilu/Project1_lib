@@ -131,6 +131,7 @@ def show_loans():
         return jsonify({'loans': loan_list})
 
 # add new loan to table loans
+# need to update loan_book without loanID - auto incremnt 
 @app.route("/loan_book", methods=['POST'])
 def loan_book():
     if request.method == 'POST':
@@ -282,6 +283,7 @@ def customer_test():
 
 
 # unit test - create a test loan
+# need fix to make this as add loan 
 @app.route("/loan_test", methods=['POST'])
 def loan_test():
     if request.method == 'POST':
@@ -290,7 +292,7 @@ def loan_test():
         "custID": 1,
         "bookID": 1,
         "LoanDate": "2021-01-01",
-        "ReturnDate": "2021-01-02"
+        "ReturnDate": "2021-01-03"
     }
         test_loan = Loans(
             loanID=test_loan_data['loanID'],
@@ -303,6 +305,23 @@ def loan_test():
         db.session.commit()
         return jsonify({'message': 'Test loan added successfully'})
 
+
+@app.route("/login", methods=['POST'])
+def login():
+    if request.method == 'POST':
+        pass
+    
+    
+@app.route("/register", methods=['POST'])
+def register():
+    if request.method == 'POST':
+        pass
+
+
+@app.route("/logout", methods=['POST'])
+def logout():
+    if request.method == 'POST':
+        pass
 
 
 
