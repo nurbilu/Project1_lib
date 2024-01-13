@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort , render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
 import sqlite3
@@ -131,20 +131,33 @@ def show_loans():
         return jsonify({'loans': loan_list})
 
 # add new loan to table loans
-# need to update loan_book without loanID - auto incremnt 
 @app.route("/loan_book", methods=['POST'])
 def loan_book():
     if request.method == 'POST':
         data = request.get_json()
+        book_name = data.get('book_name')
+        custID = data.get('custID')
+        loanDate = data.get('LoanDate')
+        returnDate = data.get('ReturnDate')
+
+        if not book_name or not custID or not loanDate or not returnDate:
+            return jsonify({'message': 'Invalid request. Please provide book_name, custID, LoanDate, and ReturnDate in the request.'}), 400
+
+        book = Books.query.filter_by(name=book_name).first()
+        customer = Customers.query.filter_by(custID=custID).first()
+
+        if not book or not customer:
+            return jsonify({'message': 'Book or customer not found.'}), 404
+
         new_loan = Loans(
-            loanID = data['loanID'],
-            custID=data['custID'],
-            bookID=data['bookID'],
-            LoanDate=data['LoanDate'],
-            ReturnDate=data['ReturnDate']
+            custID=custID,
+            bookID=book.bookID,
+            LoanDate=loanDate,
+            ReturnDate=returnDate
         )
         db.session.add(new_loan)
         db.session.commit()
+
         return jsonify({'message': 'Book loaned successfully'})
 
 # return book and delete loan from db 
@@ -283,46 +296,87 @@ def customer_test():
 
 
 # unit test - create a test loan
-# need fix to make this as add loan 
 @app.route("/loan_test", methods=['POST'])
 def loan_test():
     if request.method == 'POST':
         test_loan_data = {
-        "loanID": 1,
-        "custID": 1,
-        "bookID": 1,
-        "LoanDate": "2021-01-01",
-        "ReturnDate": "2021-01-03"
-    }
+            "book_name": "Test Book",
+            "custID": 1,
+            "LoanDate": "2022-01-13",
+            "ReturnDate": "2022-01-15"
+        }
+        book = Books.query.filter_by(name=test_loan_data['book_name']).first()
+
+        if not book:
+            return jsonify({'message': 'Book not found.'}), 404
+
         test_loan = Loans(
-            loanID=test_loan_data['loanID'],
             custID=test_loan_data['custID'],
-            bookID=test_loan_data['bookID'],
+            bookID=book.bookID,
             LoanDate=test_loan_data['LoanDate'],
             ReturnDate=test_loan_data['ReturnDate']
         )
         db.session.add(test_loan)
         db.session.commit()
+
         return jsonify({'message': 'Test loan added successfully'})
+    
 
 
-@app.route("/login", methods=['POST'])
-def login():
-    if request.method == 'POST':
-        pass
-    
-    
+# create a costumer a user     
 @app.route("/register", methods=['POST'])
 def register():
     if request.method == 'POST':
-        pass
+        data = request.get_json()
+        name = data.get('name')
+        city = data.get('city')
+        age = data.get('age')
+        password = data.get('password')
 
+        if not name or not city or not age or not password:
+            return jsonify({'message': 'Invalid request. Please provide name, city, age and password in the request.'}), 400
 
+        customer = Customers(name=name, city=city, age=age, password=password)
+        db.session.add(customer)
+        db.session.commit()
+
+        return jsonify({'message': 'Customer added successfully'})
+
+# login costumer 
+# if user didnt login -  can not access other routes/pages rather than register 
+@app.route("/login", methods=['POST'])
+def login():
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        password = data.get('password')
+
+        if not name or not password:
+            return jsonify({'message': 'Invalid request. Please provide name and password in the request.'}), 400
+
+        customer = Customers.query.filter_by(name=name).first()
+        if customer and customer.password == password:
+            return jsonify({'message': 'Login successful'})
+        else:
+            return jsonify({'message': 'Invalid username or password'}), 401
+    
+
+#logout costumer
 @app.route("/logout", methods=['POST'])
 def logout():
     if request.method == 'POST':
-        pass
+        data = request.get_json()
+        name = data.get('name')
+        password = data.get('password')
 
+        if not name or not password:
+            return jsonify({'message': 'Invalid request. Please provide name and password in the request.'}), 400
+
+        customer = Customers.query.filter_by(name=name).first()
+        if customer and customer.password == password:
+            return jsonify({'message': 'Logout successful'})
+        else:
+            return jsonify({'message': 'Invalid username or password'}), 401
 
 
 # entry point of the app 

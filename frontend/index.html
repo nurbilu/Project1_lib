@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-4">
+    <h2>Library Management System</h2>
+
+    <!-- Show Books -->
+    <div id="showBooks">
+        <h3>Show Books</h3>
+        <button class="btn btn-primary" onclick="fetchBooks()">Fetch Books</button>
+        <ul id="booksList" class="list-group mt-3"></ul>
+    </div>
+
+    <!-- Add Book -->
+    <div id="addBook" class="mt-4">
+        <h3>Add Book</h3>
+        <form id="addBookForm">
+            <div class="mb-3">
+                <label for="bookName" class="form-label">Name:</label>
+                <input type="text" class="form-control" id="bookName" required>
+            </div>
+            <div class="mb-3">
+                <label for="author" class="form-label">Author:</label>
+                <input type="text" class="form-control" id="author">
+            </div>
+            <div class="mb-3">
+                <label for="yearPublished" class="form-label">Year Published:</label>
+                <input type="number" class="form-control" id="yearPublished" required>
+            </div>
+            <div class="mb-3">
+                <label for="bookType" class="form-label">Type:</label>
+                <input type="text" class="form-control" id="bookType">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addBook()">Add Book</button>
+        </form>
+    </div>
+</div>
+
+<!-- Axios CDN -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<!-- Main Script -->
+<script>
+    // API Base URL
+    const MY_SERVER = 'http://localhost:5000';
+
+    // Function to fetch and display books
+    async function fetchBooks() {
+        try {
+            const response = await axios.get(`${MY_SERVER}/show_books`);
+            const books = response.data.books;
+
+            const booksList = document.getElementById('booksList');
+            booksList.innerHTML = '';
+
+            books.forEach(book => {
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item';
+                listItem.textContent = `${book.name} - ${book.author} - ${book.year_published}`;
+                booksList.appendChild(listItem);
+            });
+        } catch (error) {
+            console.error('Error fetching books:', error.message);
+        }
+    }
+
+    // Function to add a new book
+    async function addBook() {
+        const bookName = document.getElementById('bookName').value;
+        const author = document.getElementById('author').value;
+        const yearPublished = document.getElementById('yearPublished').value;
+        const bookType = document.getElementById('bookType').value;
+
+        try {
+            await axios.post(`${MY_SERVER}/add_book`, {
+                name: bookName,
+                author,
+                year_published: yearPublished,
+                Type: bookType
+            });
+
+            // Clear form fields
+            document.getElementById('bookName').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById('yearPublished').value = '';
+            document.getElementById('bookType').value = '';
+
+            // Fetch and display updated book list
+            fetchBooks();
+        } catch (error) {
+            console.error('Error adding book:', error.message);
+        }
+    }
+
+    // Initial fetch and display books on page load
+    fetchBooks();
+</script>
+
+</body>
+</html>
