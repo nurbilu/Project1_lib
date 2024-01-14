@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort , render_template
+from flask import Flask, request, jsonify, abort 
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
 import sqlite3
@@ -17,6 +17,11 @@ class Books(db.Model):
     author = db.Column(db.Text)
     year_published = db.Column(db.Integer, nullable=False)
     Type = db.Column(db.String(10))
+    def __init__ (self, name, author, year_published, Type):
+        self.name = name
+        self.author = author
+        self.year_published = year_published
+        self.Type = Type
     
 class Customers(db.Model):
     custID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -24,13 +29,23 @@ class Customers(db.Model):
     city = db.Column(db.String(255))
     age = db.Column(db.Integer)
     password = db.Column(db.String(500))
+    def __init__ (self, name, city, age, password):
+        self.name = name
+        self.city = city
+        self.age = age
+        self.password = password
     
 class Loans(db.Model):
     loanID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    custID = db.Column(db.Integer, nullable=False)
-    bookID = db.Column(db.Integer, nullable=False)
+    custID = db.Column(db.Integer, db.ForeignKey('customers.custID'),nullable=False)
+    bookID = db.Column(db.Integer, db.ForeignKey('books.bookID'), nullable=False)
     LoanDate = db.Column(db.Date)
     ReturnDate = db.Column(db.Date)
+    def __init__ (self, custID, bookID, LoanDate, ReturnDate):
+        self.custID = custID
+        self.bookID = bookID
+        self.LoanDate = LoanDate
+        self.ReturnDate = ReturnDate
 
 
 # test route
