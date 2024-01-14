@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="Login" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <h1>Login</h1>
+    <div>
+        <form>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password">
+            <button type="button" onclick="login()">Login</button>
+            <button type="button" onclick="window.location.href='register.html'">Register</button>
+        </form>
+    </div>
+    <div>
+        <p id="login_status"></p>
+    </div>
+
+    </div>
+    <!-- login function-->
+    <script>
+        const MY_SERVER = 'http://127.0.0.1:5000';
+
+        async function login() {
+            try {
+                var username = document.getElementById("username").value;
+                var password = document.getElementById("password").value;
+
+                const response = await axios.post(`${MY_SERVER}/login`, {
+                    username: username,
+                    password: password
+                });
+
+                if (response.data.success) {
+                    alert("Login Successful");
+                } else {
+                    alert("Login Failed");
+                }
+            } catch (error) {
+                console.error('Error during login:', error.message);
+                alert("An error occurred during login");
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

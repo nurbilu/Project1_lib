@@ -1,15 +1,25 @@
 from flask import Flask, request, jsonify, abort 
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 import sqlite3
+from flask_cors import CORS , cross_origin
 from datetime import date
+from sqlalchemy.orm import class_mapper
+from werkzeug.utils import secure_filename
+import jwt
+from flask_bcrypt import Bcrypt
+
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://user:MYSQL@localhost/library'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
+CORS(app)
+# my_secret_key = 'thisismysecretkey'
 # set models 
 class Books(db.Model):
     bookID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -28,12 +38,12 @@ class Customers(db.Model):
     name = db.Column(db.String(255), nullable=False)
     city = db.Column(db.String(255))
     age = db.Column(db.Integer)
-    password = db.Column(db.String(500))
+    password_hash = db.Column(db.String(60), nullable=False)
     def __init__ (self, name, city, age, password):
         self.name = name
         self.city = city
         self.age = age
-        self.password = password
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     
 class Loans(db.Model):
     loanID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -47,6 +57,13 @@ class Loans(db.Model):
         self.LoanDate = LoanDate
         self.ReturnDate = ReturnDate
 
+# set routes
+# protected route
+@app.route("/protected", methods=['GET'])
+@jwt_required()
+def protected():
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
 
 # test route
 @app.route("/")
@@ -55,6 +72,8 @@ def test():
 
 # display all books
 @app.route("/show_books", methods=['GET'])
+@jwt_required()
+@cross_origin()
 def show_books():
     if request.method == 'GET':
         books = Books.query.all()
@@ -74,28 +93,35 @@ def show_books():
 
 # add new book to table books
 @app.route("/add_book", methods=['POST'])
+@jwt_required()
+@cross_origin()
 def add_book():
     if request.method == 'POST':
-        data = request.get_json()
+        try:
+            data = request.get_json()
 
-        new_book = Books(
-            bookID=data['bookID'],
-            name=data['name'],
-            author=data['author'],
-            year_published=data['year_published'],
-            Type=data['Type']
-        )
+            new_book = Books(
+                name=data['name'],
+                author=data['author'],
+                year_published=data['year_published'],
+                Type=data['Type']
+            )
 
-        db.session.add(new_book)
-        db.session.commit()
+            db.session.add(new_book)
+            db.session.commit()
 
-        return jsonify({'message': 'Book added successfully'})
+            return jsonify({'message': 'Book added successfully'}), 200
+        except Exception as e:
+            print(f"Error adding book: {str(e)}")
+            return jsonify({'message': 'Internal Server Error'}), 500
     
     
     
 
 # show all customers 
 @app.route("/show_customers", methods=['GET'])
+@jwt_required()
+@cross_origin()
 def show_customers():
     if request.method == 'GET':
         customers = Customers.query.all()
@@ -113,23 +139,25 @@ def show_customers():
         return jsonify({'customers': customer_list})
 
 # add new customer to table customers
-@app.route("/add_customer", methods=['POST'])
-def add_customer():
-    if request.method == 'POST':
-        data = request.get_json()
-        new_customer = Customers(
-            custID = data['custID'],
-            name=data['name'],
-            city=data['city'],
-            age=data['age'],
-            password=data['password']
-        )
-        db.session.add(new_customer)
-        db.session.commit()
-        return jsonify({'message': 'Customer added successfully'})
+# @app.route("/add_customer", methods=['POST'])
+# def add_customer():
+#     if request.method == 'POST':
+#         data = request.get_json()
+#         new_customer = Customers(
+#             custID = data['custID'],
+#             name=data['name'],
+#             city=data['city'],
+#             age=data['age'],
+#             password=data['password']
+#         )
+#         db.session.add(new_customer)
+#         db.session.commit()
+#         return jsonify({'message': 'Customer added successfully'})
  
 # show all loans
 @app.route("/show_loans", methods=['GET'])
+@jwt_required()
+@cross_origin()
 def show_loans():
     if request.method == 'GET':
         loans = Loans.query.all()
@@ -147,6 +175,8 @@ def show_loans():
 
 # add new loan to table loans
 @app.route("/loan_book", methods=['POST'])
+@jwt_required()
+@cross_origin()
 def loan_book():
     if request.method == 'POST':
         data = request.get_json()
@@ -177,6 +207,8 @@ def loan_book():
 
 # return book and delete loan from db 
 @app.route("/return_book", methods=['POST'])
+@jwt_required()
+@cross_origin()
 def return_book():
     if request.method == 'POST':
         data = request.get_json()
@@ -211,6 +243,8 @@ def return_book():
 
 # search book by name
 @app.route("/search_book/", methods=['POST'])
+@cross_origin()
+@jwt_required()
 def search_book():
     if request.method == 'POST':
         data = request.get_json()
@@ -229,6 +263,8 @@ def search_book():
 
 # search customer by name 
 @app.route("/search_customer/", methods=['POST'])
+@jwt_required()
+@cross_origin()
 def search_customer():
     if request.method == 'POST':
         data = request.get_json()
@@ -248,6 +284,8 @@ def search_customer():
     
 # display late loans
 @app.route("/display_late_loans", methods=['GET'])
+@cross_origin()
+@jwt_required()
 def display_late_loans():
     today = date.today()
     late_loans = Loans.query.filter(Loans.ReturnDate < today).all()
@@ -267,6 +305,8 @@ def display_late_loans():
 
 # unit test - create a test book
 @app.route("/book_test", methods=['POST'])
+@cross_origin()
+@jwt_required()
 def book_test():
     if request.method == 'POST':
         test_book_data = {
@@ -291,6 +331,7 @@ def book_test():
 
 # unit test - create a test customer
 @app.route("/customer_test", methods=['POST'])
+@cross_origin()
 def customer_test():
     if request.method == 'POST':
         test_customer_data = {
@@ -312,6 +353,7 @@ def customer_test():
 
 # unit test - create a test loan
 @app.route("/loan_test", methods=['POST'])
+@cross_origin()
 def loan_test():
     if request.method == 'POST':
         test_loan_data = {
@@ -340,6 +382,7 @@ def loan_test():
 
 # create a costumer a user     
 @app.route("/register", methods=['POST'])
+@cross_origin()
 def register():
     if request.method == 'POST':
         data = request.get_json()
@@ -349,17 +392,22 @@ def register():
         password = data.get('password')
 
         if not name or not city or not age or not password:
-            return jsonify({'message': 'Invalid request. Please provide name, city, age and password in the request.'}), 400
+            return jsonify({'message': 'Invalid request. Please provide name, city, age, and password in the request.'}), 400
 
-        customer = Customers(name=name, city=city, age=age, password=password)
-        db.session.add(customer)
+        existing_user = Customers.query.filter_by(name=name).first()
+        if existing_user:
+            return jsonify({'message': 'User already exists. Please choose a different username.'}), 409
+
+        new_customer = Customers(name=name, city=city, age=age, password=password)
+        db.session.add(new_customer)
         db.session.commit()
 
-        return jsonify({'message': 'Customer added successfully'})
+        return jsonify({'message': 'Customer registered successfully'})
 
 # login costumer 
 # if user didnt login -  can not access other routes/pages rather than register 
 @app.route("/login", methods=['POST'])
+@cross_origin()
 def login():
     if request.method == 'POST':
         data = request.get_json()
@@ -371,13 +419,15 @@ def login():
 
         customer = Customers.query.filter_by(name=name).first()
         if customer and customer.password == password:
-            return jsonify({'message': 'Login successful'})
+            access_token = generate_access_token(identity=name)
+            return jsonify({'message': 'Login successful', 'access_token': access_token})
         else:
             return jsonify({'message': 'Invalid username or password'}), 401
-    
+ 
 
 #logout costumer
 @app.route("/logout", methods=['POST'])
+@cross_origin()
 def logout():
     if request.method == 'POST':
         data = request.get_json()
@@ -398,4 +448,5 @@ def logout():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # Create the database tables before running the app
+    CORS(app, supports_credentials=True)
     app.run(debug=True, port=5000)

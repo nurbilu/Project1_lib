@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <!-- register -->
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">Register</h1>
+                <form>
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="city">City:</label>
+                            <input type="text" class="form-control" id="city" name="city">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="age">Age:</label>
+                            <input type="number" class="form-control" id="age" name="age">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+
+                    <button type="button" onclick="register()" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        const MY_SERVER = "http://localhost:5000";
+        async function register() {
+            try {
+                var username = document.getElementById("username").value;
+                var city = document.getElementById("city").value;
+                var age = document.getElementById("age").value;
+                var password = document.getElementById("password").value;
+
+                const response = await axios.post(`${MY_SERVER}/register`, {
+                    username: username,
+                    city: city,
+                    age: age,
+                    password: password
+                });
+
+                if (response.data.message === 'Customer registered successfully') {
+                    alert("Registration Successful");
+                } else {
+                    alert("Registration Failed");
+                }
+            } catch (error) {
+                console.error('Error during registration:', error.message);
+                alert("An error occurred during registration");
+            }
+        }
+    </script>
+
+
+</body>
+
+</html>

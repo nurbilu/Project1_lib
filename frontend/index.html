@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,102 +8,128 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <!-- Axios CDN -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
 
-<div class="container mt-4">
-    <h2>Library Management System</h2>
+    <div class="container mt-4">
+        <h2>Library Management System</h2>
 
-    <!-- Show Books -->
-    <div id="showBooks">
-        <h3>Show Books</h3>
-        <button class="btn btn-primary" onclick="fetchBooks()">Fetch Books</button>
-        <ul id="booksList" class="list-group mt-3"></ul>
-    </div>
+        <!-- Show Books -->
+        <div id="showBooks">
+            <h3>Show Books</h3>
+            <button class="btn btn-primary" onclick="fetchBooks()">Fetch Books</button>
+            <ul id="booksList" class="list-group mt-3"></ul>
+        </div>
 
-    <!-- Add Book -->
-    <div id="addBook" class="mt-4">
-        <h3>Add Book</h3>
-        <form id="addBookForm">
-            <div class="mb-3">
-                <label for="bookName" class="form-label">Name:</label>
-                <input type="text" class="form-control" id="bookName" required>
-            </div>
-            <div class="mb-3">
-                <label for="author" class="form-label">Author:</label>
-                <input type="text" class="form-control" id="author">
-            </div>
-            <div class="mb-3">
-                <label for="yearPublished" class="form-label">Year Published:</label>
-                <input type="number" class="form-control" id="yearPublished" required>
-            </div>
-            <div class="mb-3">
-                <label for="bookType" class="form-label">Type:</label>
-                <input type="text" class="form-control" id="bookType">
-            </div>
-            <button type="button" class="btn btn-primary" onclick="addBook()">Add Book</button>
-        </form>
-    </div>
-</div>
+        <!-- Add Book -->
+        <div id="addBook" class="mt-4">
+            <h3>Add Book</h3>
+            <form id="addBookForm">
+                <div class="mb-3">
+                    <label for="bookName" class="form-label">Name:</label>
+                    <input type="text" class="form-control" id="bookName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="author" class="form-label">Author:</label>
+                    <input type="text" class="form-control" id="author">
+                </div>
+                <div class="mb-3">
+                    <label for="yearPublished" class="form-label">Year Published:</label>
+                    <input type="number" class="form-control" id="yearPublished" required>
+                </div>
+                <div class="mb-3">
+                    <label for="bookType" class="form-label">Type:</label>
+                    <select class="form-select" id="bookType" required>
+                        <option value="2 days">2 days</option>
+                        <option value="5 days">5 days</option>
+                        <option value="10 days">10 days</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="addBook()">Add Book</button>
+            </form>
+        </div>
 
 
-<!-- Main Script -->
-<script>
-    // API Base URL
-    const MY_SERVER = 'http://localhost:5000';
+    <!-- Main Script -->
+    <script>
+        // API Base URL
+        const MY_SERVER = 'http://localhost:5000';
 
-    // Function to fetch and display books
-    async function fetchBooks() {
-        try {
-            const response = await axios.get(`${MY_SERVER}/show_books`);
-            const books = response.data.books;
+        // Function to fetch and display books
+        async function fetchBooks() {
+            try {
+                const response = await axios.get(`${MY_SERVER}/show_books`);
+                const books = response.data.books;
 
-            const booksList = document.getElementById('booksList');
-            booksList.innerHTML = '';
+                const booksList = document.getElementById('booksList');
+                booksList.innerHTML = '';
 
-            books.forEach(book => {
-                const listItem = document.createElement('li');
-                listItem.className = 'list-group-item';
-                listItem.textContent = `${book.name} - ${book.author} - ${book.year_published}`;
-                booksList.appendChild(listItem);
-            });
-        } catch (error) {
-            console.error('Error fetching books:', error.message);
+                books.forEach(book => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item';
+                    listItem.textContent = `${book.name} - ${book.author} - ${book.year_published}`;
+                    booksList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Error fetching books:', error.message);
+            }
         }
-    }
 
-    // Function to add a new book
-    async function addBook() {
-        const bookName = document.getElementById('bookName').value;
-        const author = document.getElementById('author').value;
-        const yearPublished = document.getElementById('yearPublished').value;
-        const bookType = document.getElementById('bookType').value;
+        // Function to add a new book
+        async function addBook() {
+            const bookName = document.getElementById('bookName').value;
+            const author = document.getElementById('author').value;
+            const yearPublished = document.getElementById('yearPublished').value;
+            const bookType = document.getElementById('bookType').value;
 
-        try {
-            await axios.post(`${MY_SERVER}/add_book`, {
-                name: bookName,
-                author,
-                year_published: yearPublished,
-                Type: bookType
-            });
+            try {
+                await axios.post(`${MY_SERVER}/add_book`, {
+                    name: bookName,
+                    author,
+                    year_published: yearPublished,
+                    Type: bookType
+                });
 
-            // Clear form fields
-            document.getElementById('bookName').value = '';
-            document.getElementById('author').value = '';
-            document.getElementById('yearPublished').value = '';
-            document.getElementById('bookType').value = '';
+                // Clear form fields
+                document.getElementById('bookName').value = '';
+                document.getElementById('author').value = '';
+                document.getElementById('yearPublished').value = '';
+                document.getElementById('bookType').value = '';
 
-            // Fetch and display updated book list
-            fetchBooks();
-        } catch (error) {
-            console.error('Error adding book:', error.message);
+                // Fetch and display updated book list
+                fetchBooks();
+            } catch (error) {
+                console.error('Error adding book:', error.message);
+            }
         }
-    }
 
-    // Initial fetch and display books on page load
-    fetchBooks();
-</script>
-
+        // Initial fetch and display books on page load
+        fetchBooks();
+    </script>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Library System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#showBooks">Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#addBook">Add Book</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 </body>
+
 </html>
