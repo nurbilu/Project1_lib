@@ -12,13 +12,34 @@ from flask_bcrypt import Bcrypt
 
 
 app = Flask(__name__)
+api = Api(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://user:MYSQL@localhost/library'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234#@localhost/library'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
 CORS(app)
+
+
+
+
+# Define the generate_access_token function
+def generate_access_token(identity):
+    """
+    Generate an access token for the given identity.
+
+    Parameters:
+    - identity: The identity for which the token is generated.
+
+    Returns:
+    - access_token: The generated access token.
+    """
+    access_token = create_access_token(identity=identity)
+    return access_token
+
+
 # my_secret_key = 'thisismysecretkey'
 # set models 
 class Books(db.Model):
@@ -38,12 +59,12 @@ class Customers(db.Model):
     name = db.Column(db.String(255), nullable=False)
     city = db.Column(db.String(255))
     age = db.Column(db.Integer)
-    password_hash = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(500), nullable=False)
     def __init__ (self, name, city, age, password):
         self.name = name
         self.city = city
         self.age = age
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
     
 class Loans(db.Model):
     loanID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -62,8 +83,13 @@ class Loans(db.Model):
 @app.route("/protected", methods=['GET'])
 @jwt_required()
 def protected():
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200
+    try:
+        current_user = get_jwt_identity()
+        return jsonify(logged_in_as=current_user), 200
+    except Exception as e:
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+
 
 # test route
 @app.route("/")
@@ -335,10 +361,10 @@ def book_test():
 def customer_test():
     if request.method == 'POST':
         test_customer_data = {
-        "name": "<NAME>",
+        "name": "NAME",
         "city": "Test City",
         "age": 20,
-        "password": "<PASSWORD>"
+        "password": "123456789"
     }   
         test_customer = Customers(
             name=test_customer_data['name'],
@@ -418,11 +444,13 @@ def login():
             return jsonify({'message': 'Invalid request. Please provide name and password in the request.'}), 400
 
         customer = Customers.query.filter_by(name=name).first()
-        if customer and customer.password == password:
+        if customer and bcrypt.check_password_hash(customer.password, password):
             access_token = generate_access_token(identity=name)
             return jsonify({'message': 'Login successful', 'access_token': access_token})
         else:
             return jsonify({'message': 'Invalid username or password'}), 401
+
+
  
 
 #logout costumer

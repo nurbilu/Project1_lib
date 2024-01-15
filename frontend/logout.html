@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Logout</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="home.html">Home <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Logout handling -->
+
+    <script>
+        const MY_SERVER= "http://localhost:5000";
+
+        async function logout() {
+            if (confirm("Are you sure you want to logout?")) {
+                try {
+                    await axios.post(`${MY_SERVER}/logout`);
+                    alert("Logged out successfully");
+                    window.close();
+                } catch (error) {
+                    console.error("Error logging out:", error);
+                    alert("Error logging out");
+                }
+            } else {
+                window.close();
+            }
+        }
+        logout();
+    </script>
+
+</body>
+
+</html>
+
+</html>
