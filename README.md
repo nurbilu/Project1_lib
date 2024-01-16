@@ -9,11 +9,19 @@
     add the line : *
     pip install -r requirements.txt
 
+    cd backend
+    bash env\Scripts\activate
+    py app.py
+
+
 # progress 
     now backend program(almost complete to complete ):
     all functions needed by project requirements are done
     but need complete adjesment to the code when frontend is near finished/done
     and strated creating frontend program (in progress)
+
+### to do list :
+    fix authorization for show book show i can finish program - get the access key problem in this 
 
 ### will be finished no more than the 21/01/2024
     remember to change user and pwd in the program for the database

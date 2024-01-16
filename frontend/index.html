@@ -12,44 +12,38 @@
 </head>
 
 <body>
+    <!-- Existing Head section remains the same -->
 
-    <div class="container mt-4">
-        <h2>Library Management System</h2>
+    <body>
+        <!-- Existing Navbar and other sections remain the same -->
 
-        <!-- Show Books -->
-        <div id="showBooks">
-            <h3>Show Books</h3>
-            <button class="btn btn-primary" onclick="fetchBooks()">Fetch Books</button>
-            <ul id="booksList" class="list-group mt-3"></ul>
+        <div class="container mt-4">
+            <h2>Library Management System</h2>
+
+            <!-- Show Books in Table Format -->
+            <div id="showBooks">
+                <h3>Show Books</h3>
+
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Author</th>
+                            <th>Year Published</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="booksTableBody">
+                        <!-- Book rows will be added here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Add Book -->
-        <div id="addBook" class="mt-4">
-            <h3>Add Book</h3>
-            <form id="addBookForm">
-                <div class="mb-3">
-                    <label for="bookName" class="form-label">Name:</label>
-                    <input type="text" class="form-control" id="bookName" required>
-                </div>
-                <div class="mb-3">
-                    <label for="author" class="form-label">Author:</label>
-                    <input type="text" class="form-control" id="author">
-                </div>
-                <div class="mb-3">
-                    <label for="yearPublished" class="form-label">Year Published:</label>
-                    <input type="number" class="form-control" id="yearPublished" required>
-                </div>
-                <div class="mb-3">
-                    <label for="bookType" class="form-label">Type:</label>
-                    <select class="form-select" id="bookType" required>
-                        <option value="2 days">2 days</option>
-                        <option value="5 days">5 days</option>
-                        <option value="10 days">10 days</option>
-                    </select>
-                </div>
-                <button type="button" class="btn btn-primary" onclick="addBook()">Add Book</button>
-            </form>
-        </div>
+
+    </body>
+
+
 
 
     <!-- Main Script -->
@@ -59,51 +53,45 @@
 
         // Function to fetch and display books
         async function fetchBooks() {
-            try {
-                const response = await axios.get(`${MY_SERVER}/show_books`);
-                const books = response.data.books;
-
-                const booksList = document.getElementById('booksList');
-                booksList.innerHTML = '';
-
-                books.forEach(book => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'list-group-item';
-                    listItem.textContent = `${book.name} - ${book.author} - ${book.year_published}`;
-                    booksList.appendChild(listItem);
+                try {
+                    // Assuming you have the access token stored correctly in 'accessToken'
+                    const accessToken = 'YOUR_STORED_ACCESS_TOKEN'; 
+            
+                    const response = await axios.get(`${MY_SERVER}/show_books`, {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
+            
+                    const books = response.data.books;
+                    const booksTableBody = document.getElementById('booksTableBody');
+                    booksTableBody.innerHTML = '';
+            
+                    books.forEach(book => {const row = document.createElement('tr');
+                    row.innerHTML = `<td>${book.name}</td><td>${book.author}</td><td>${book.year_published}</td>`;
+                    booksTableBody.appendChild(row);
                 });
-            } catch (error) {
+            }   //more elaborate error for debugging 
+            catch (error) {
                 console.error('Error fetching books:', error.message);
-            }
-        }
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    console.error(error.response.data);
+                    console.error(error.response.status);
+                    console.error(error.response.headers);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    console.error(error.request);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.error('Error', error.message);
+                }
+            }}
+
+
 
         // Function to add a new book
-        async function addBook() {
-            const bookName = document.getElementById('bookName').value;
-            const author = document.getElementById('author').value;
-            const yearPublished = document.getElementById('yearPublished').value;
-            const bookType = document.getElementById('bookType').value;
-
-            try {
-                await axios.post(`${MY_SERVER}/add_book`, {
-                    name: bookName,
-                    author,
-                    year_published: yearPublished,
-                    Type: bookType
-                });
-
-                // Clear form fields
-                document.getElementById('bookName').value = '';
-                document.getElementById('author').value = '';
-                document.getElementById('yearPublished').value = '';
-                document.getElementById('bookType').value = '';
-
-                // Fetch and display updated book list
-                fetchBooks();
-            } catch (error) {
-                console.error('Error adding book:', error.message);
-            }
-        }
 
         // Initial fetch and display books on page load
         fetchBooks();
@@ -116,6 +104,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
+                <img width="40"
+                    src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="home.html">Home</a>
@@ -123,7 +113,7 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="index.html">Book system</a>
                     </li>
-                    
+
                     <li class="nav-item">
                         <a class="nav-link" href="login.html">login</a>
                     </li>
