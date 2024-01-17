@@ -1,17 +1,20 @@
 from flask import Flask, request, jsonify, abort 
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity , decode_token
 import sqlite3
 from flask_cors import CORS , cross_origin
-from datetime import date
+from datetime import date 
 from sqlalchemy.orm import class_mapper
 from werkzeug.utils import secure_filename
 import jwt
 from flask_bcrypt import Bcrypt
+import datetime
+
 
 
 app = Flask(__name__)
+app.secret_key = 'secret_secret_key'
 api = Api(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/library' # change this to your own mysql database
@@ -25,13 +28,14 @@ CORS(app )
 
 
 
-# Define the generate_access_token function
-def generate_access_token(identity):
-    access_token = create_access_token(identity=identity)
-    return access_token
+# Define the authentication_successful function here
+def authentication_successful(name, password):
+    global customer
+    customer = Customers.query.filter_by(name=name).first()
+    if customer and bcrypt.check_password_hash(customer.password, password):
+        return True
+    return False
 
-
-# my_secret_key = 'thisismysecretkey'
 # set models 
 class Books(db.Model):
     bookID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -68,6 +72,8 @@ class Loans(db.Model):
         self.bookID = bookID
         self.LoanDate = LoanDate
         self.ReturnDate = ReturnDate
+        
+
 
 # set routes
 # test route
@@ -79,6 +85,7 @@ def test():
 @app.route("/show_books", methods=['GET'])
 @jwt_required()
 def show_books():
+    current_custID = get_jwt_identity()
     if request.method == 'GET':
         books = Books.query.all()
         book_list = []
@@ -99,6 +106,7 @@ def show_books():
 @app.route("/add_book", methods=['POST'])
 @jwt_required()
 def add_book():
+    current_custID = get_jwt_identity()
     if request.method == 'POST':
         try:
             data = request.get_json()
@@ -125,16 +133,15 @@ def add_book():
 @app.route("/show_customers", methods=['GET'])
 @jwt_required()
 def show_customers():
+    current_custID = get_jwt_identity()
     if request.method == 'GET':
         customers = Customers.query.all()
         customer_list = []
         for customer in customers:
             customer_data = {
-                'customerID': customer.custID,
                 'name': customer.name,
                 'city': customer.city,
-                'age': customer.age,
-                'password': customer.password
+                'age': customer.age
             }
             customer_list.append(customer_data)
 
@@ -160,6 +167,7 @@ def show_customers():
 @app.route("/show_loans", methods=['GET'])
 @jwt_required()
 def show_loans():
+    current_custID = get_jwt_identity()
     if request.method == 'GET':
         loans = Loans.query.all()
         loan_list = []
@@ -178,6 +186,7 @@ def show_loans():
 @app.route("/loan_book", methods=['POST'])
 @jwt_required()
 def loan_book():
+    current_custID = get_jwt_identity()
     if request.method == 'POST':
         data = request.get_json()
         book_name = data.get('book_name')
@@ -209,6 +218,7 @@ def loan_book():
 @app.route("/return_book", methods=['POST'])
 @jwt_required()
 def return_book():
+    current_custID = get_jwt_identity()
     if request.method == 'POST':
         data = request.get_json()
         book_name = data.get('book_name')
@@ -244,6 +254,7 @@ def return_book():
 @app.route("/search_book/", methods=['POST'])
 @jwt_required()
 def search_book():
+    current_custID = get_jwt_identity()
     if request.method == 'POST':
         data = request.get_json()
         book = Books.query.filter_by(name=data['name']).first()
@@ -263,6 +274,7 @@ def search_book():
 @app.route("/search_customer/", methods=['POST'])
 @jwt_required()
 def search_customer():
+    current_custID = get_jwt_identity()
     if request.method == 'POST':
         data = request.get_json()
         customer = Customers.query.filter_by(name=data['name']).first()
@@ -283,6 +295,7 @@ def search_customer():
 @app.route("/display_late_loans", methods=['GET'])
 @jwt_required()
 def display_late_loans():
+    current_custID = get_jwt_identity()
     today = date.today()
     late_loans = Loans.query.filter(Loans.ReturnDate < today).all()
     late_loan_list = []
@@ -303,6 +316,7 @@ def display_late_loans():
 @app.route("/book_test", methods=['POST'])
 @jwt_required()
 def book_test():
+    current_custID = get_jwt_identity()
     if request.method == 'POST':
         books_data = [
             {"name": "1984", "author": "George Orwell", "year_published": 1949, "Type": "2 days"},
@@ -326,7 +340,9 @@ def book_test():
 
 # unit test - create a test customer
 @app.route("/customer_test", methods=['POST'])
+@jwt_required()
 def customer_test():
+    current_custID = get_jwt_identity()
     if request.method == 'POST':
         test_customer_data = {"name": "roei","city": "Tel Aviv","age": 20, "password": "111111111"}
         test_customer = Customers(
@@ -342,7 +358,9 @@ def customer_test():
 
 # unit test - create a test loan
 @app.route("/loan_test", methods=['POST'])
+@jwt_required()
 def loan_test():
+    current_custID = get_jwt_identity()
     if request.method == 'POST':
         test_loan_data = {"book_name": "Test Book","custID": 1,"LoanDate": "2022-01-13", "ReturnDate": "2022-01-15"}
         book = Books.query.filter_by(name=test_loan_data['book_name']).first()
@@ -395,37 +413,52 @@ def login():
         name = data.get('name')
         password = data.get('password')
 
-        if not name or not password:
-            app.logger.error(f"Invalid login attempt: name={name}, password={password}")
-            return jsonify({'message': 'Invalid request. Please provide name and password in the request.'}), 400
+        if authentication_successful(name, password):
+            custName = customer.query.filter_by(name=name).first().custID
+            token = generate_token(custName)
+            return jsonify({'token': token})
 
-        customer = Customers.query.filter_by(name=name).first()
-        if customer and bcrypt.check_password_hash(customer.password, password):
-            access_token = generate_access_token(identity=name)
+        if custName and bcrypt.check_password_hash(custName.password, password):
+            access_token = generate_token(identity=name)
             return jsonify({'message': 'Login successful', 'access_token': access_token})
         else:
             return jsonify({'message': 'Invalid username or password'}), 401
 
 
- 
 
-#logout costumer
+
+# logout costumer
 @app.route("/logout", methods=['POST'])
 def logout():
     if request.method == 'POST':
-        data = request.get_json()
-        name = data.get('name')
-        password = data.get('password')
+        # Extract the token from the Authorization header
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(" ")[1]
+        else:
+            return jsonify({'message': 'Bearer token not provided'}), 401
 
-        if not name or not password:
-            return jsonify({'message': 'Invalid request. Please provide name and password in the request.'}), 400
+        # Decode and validate the token
+        try:
+            payload = decode_token(token)
+            name = payload.get('name')
+        except Exception as e:
+            return jsonify({'message': 'Invalid token. Error: ' + str(e)}), 401
 
         customer = Customers.query.filter_by(name=name).first()
-        if customer and customer.password == password:
+        if customer:
+            invalidate_token(token)  # Invalidate the token
             return jsonify({'message': 'Logout successful'})
         else:
-            return jsonify({'message': 'Invalid username or password'}), 401
+            return jsonify({'message': 'Invalid user'}), 401
 
+
+
+# gereate a token for the costumer as user fo library 
+def generate_token(custID):
+    expiration_time = datetime.timedelta(minutes=20)
+    token = create_access_token(identity=custID, expires_delta=expiration_time)
+    return token
 
 # entry point of the app 
 if __name__ == "__main__":

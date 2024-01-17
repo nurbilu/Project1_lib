@@ -53,21 +53,21 @@
 
         // Function to fetch and display books
         async function fetchBooks() {
-                try {
-                    // Assuming you have the access token stored correctly in 'accessToken'
-                    const accessToken = 'YOUR_STORED_ACCESS_TOKEN'; 
-            
-                    const response = await axios.get(`${MY_SERVER}/show_books`, {
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    });
-            
-                    const books = response.data.books;
-                    const booksTableBody = document.getElementById('booksTableBody');
-                    booksTableBody.innerHTML = '';
-            
-                    books.forEach(book => {const row = document.createElement('tr');
+            try {
+                // Assuming you have the access token stored correctly in 'accessToken'
+                const accessToken = localStorage.getItem('jwtToken');
+                const response = await axios.get(`${MY_SERVER}/show_books`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                const books = response.data.books;
+                const booksTableBody = document.getElementById('booksTableBody');
+                booksTableBody.innerHTML = '';
+
+                books.forEach(book => {
+                    const row = document.createElement('tr');
                     row.innerHTML = `<td>${book.name}</td><td>${book.author}</td><td>${book.year_published}</td>`;
                     booksTableBody.appendChild(row);
                 });
@@ -87,8 +87,9 @@
                     // Something happened in setting up the request that triggered an Error
                     console.error('Error', error.message);
                 }
-            }}
-
+            }
+        }
+        window.onload = fetchBooks;
 
 
         // Function to add a new book

@@ -17,7 +17,7 @@
             <input type="text" id="username" name="username">
             <label for="password">Password:</label>
             <input type="password" id="password" name="password">
-            <button type="button" onclick="login()">Login</button>
+            <button type="button" class="btn btn-primary" onclick="login()">Login</button>
         </form>
     </div>
     <div>
@@ -39,7 +39,7 @@
                     password
                 });
         
-                console.log('Login successful:', response.data);
+                console.log('Login successful:', response.data );
                 const accessToken = response.data.access_token; // Assuming the token is in this field
             } catch (error) {
                 console.error('Error during login:', error.response.data.message);

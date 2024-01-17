@@ -24,40 +24,28 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="home.html">Home <span class="sr-only">(current)</span></a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="login.html">login<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="register.html">register<span class="sr-only">(current)</span></a>
+                </li>
             </ul>
         </div>
     </nav>
-
+<button type="button" class="btn btn-warning" onclick="logout()">Logout</button>
     <!-- Logout handling -->
 
     <script>
-        const MY_SERVER = "http://localhost:5000";
-    
-        async function logout() {
-            if (confirm("Are you sure you want to logout?")) {
-                try {
-                    // Making an asynchronous POST request to the server's logout endpoint
-                    await axios.post(`${MY_SERVER}/logout`);
-    
-                    // Remove the token from the client storage, such as local storage or cookies
-                    localStorage.removeItem('accessToken');
-    
-                    alert("Logged out successfully");
-                    // Redirect the user or update the UI to reflect the logged-out state
-                    // For instance, you might want to redirect to the login page or home page
-                    window.location.href = 'login.html'; // Example redirect
-                } catch (error) {
-                    console.error("Error logging out:", error);
-                    alert("Error logging out");
-                }
-            } else {
-                // Handle the case where the user decides not to logout
-                // For example, you might want to redirect them back to the home page or do nothing
-                console.log('Logout cancelled by the user.');
-            }
+        function logout() {
+            // Clear JWT token from storage
+            localStorage.removeItem('jwtToken');
+            
+            // Redirect to login page or show logged out message
+            window.location.href = '/login.html';
         }
-        logout();
-    </script>
+        </script>
+    
     
 
 </body>
