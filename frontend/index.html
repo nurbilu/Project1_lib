@@ -48,27 +48,34 @@
 
     <!-- Main Script -->
     <script>
-        // API Base URL
         const MY_SERVER = 'http://localhost:5000';
-
-        // Function to fetch and display books
+    
         async function fetchBooks() {
             try {
-                // Assuming you have the access token stored correctly in 'accessToken'
-                const accessToken = localStorage.getItem('jwtToken');
+                const accessToken = sessionStorage.getItem('jwtToken');
+                console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
+    
+                if (!accessToken) {
+                    console.error('No JWT Token found');
+                    // Handle the scenario where the token is missing
+                    return;
+                }
+    
                 const response = await axios.get(`${MY_SERVER}/show_books`, {
                     headers: {
                         'Authorization': `Bearer ${accessToken}`
                     }
                 });
-
+    
                 const books = response.data.books;
                 const booksTableBody = document.getElementById('booksTableBody');
                 booksTableBody.innerHTML = '';
 
                 books.forEach(book => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `<td>${book.name}</td><td>${book.author}</td><td>${book.year_published}</td>`;
+                    row.innerHTML = `<td>${book.name}</td>
+                    <td>${book.author}</td><td>${book.year_published}</td>
+                    <td>${book.type}</td>}`;
                     booksTableBody.appendChild(row);
                 });
             }   //more elaborate error for debugging 
@@ -89,10 +96,7 @@
                 }
             }
         }
-        window.onload = fetchBooks;
 
-
-        // Function to add a new book
 
         // Initial fetch and display books on page load
         fetchBooks();

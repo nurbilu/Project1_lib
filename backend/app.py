@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, abort 
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity , decode_token
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity , decode_token , get_jwt
 import sqlite3
 from flask_cors import CORS , cross_origin
 from datetime import date 
@@ -14,6 +14,7 @@ import datetime
 
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = 'secret_secret_key'
 api = Api(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
@@ -23,10 +24,24 @@ app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-CORS(app )
+invalidated_tokens = {}
+
+# Check if the token is not in the invalidated tokens list
+def is_token_valid(token):
+    global invalidated_tokens
+    return token not in invalidated_tokens
 
 
-
+def get_jwt_token():
+# Extract the token from the header
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        parts = auth_header.split()
+        token = parts[1]
+        return token
+    else:
+        return None
+    return get_jwt()["jti"]
 
 # Define the authentication_successful function here
 def authentication_successful(name, password):
@@ -35,6 +50,16 @@ def authentication_successful(name, password):
     if customer and bcrypt.check_password_hash(customer.password, password):
         return True
     return False
+
+
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected_route():
+    # Extract the token
+    token = get_jwt_token()
+    # Check if the token is valid
+    if not is_token_valid(token):
+        return jsonify({'message': 'Token is invalidated'}), 401
 
 # set models 
 class Books(db.Model):
@@ -426,31 +451,29 @@ def login():
 
 
 
-
 # logout costumer
+# fix logout so it blocks connction to the other endpoints 
 @app.route("/logout", methods=['POST'])
 def logout():
     if request.method == 'POST':
-        # Extract the token from the Authorization header
+        # Extract and decode the token
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header.split(" ")[1]
+            try:
+                payload = decode_token(token)
+                # Invalidate the token
+                invalidate_token(token)
+                return jsonify({'message': 'Logout successful'}), 200
+            except jwt.ExpiredSignatureError:
+                # Handle expired token case
+                return jsonify({'message': 'Token has expired'}), 401
+            except jwt.InvalidTokenError:
+                # Handle invalid token case
+                return jsonify({'message': 'Invalid token'}), 401
         else:
             return jsonify({'message': 'Bearer token not provided'}), 401
 
-        # Decode and validate the token
-        try:
-            payload = decode_token(token)
-            name = payload.get('name')
-        except Exception as e:
-            return jsonify({'message': 'Invalid token. Error: ' + str(e)}), 401
-
-        customer = Customers.query.filter_by(name=name).first()
-        if customer:
-            invalidate_token(token)  # Invalidate the token
-            return jsonify({'message': 'Logout successful'})
-        else:
-            return jsonify({'message': 'Invalid user'}), 401
 
 
 
