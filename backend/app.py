@@ -216,7 +216,7 @@ def loan_book():
         data = request.get_json()
         book_name = data.get('book_name')
         custID = data.get('custID')
-        loanDate = data.get('LoanDate')
+        loanDate = data.post(date.today())
         returnDate = data.get('ReturnDate')
 
         if not book_name or not custID or not loanDate or not returnDate:
@@ -386,8 +386,9 @@ def customer_test():
 @jwt_required()
 def loan_test():
     current_custID = get_jwt_identity()
+    timedelta = date.today
     if request.method == 'POST':
-        test_loan_data = {"book_name": "Test Book","custID": 1,"LoanDate": "2022-01-13", "ReturnDate": "2022-01-15"}
+        test_loan_data = {"book_name": "1984","custID": 1,"LoanDate": date.today(), "ReturnDate": "2024-01-21" }
         book = Books.query.filter_by(name=test_loan_data['book_name']).first()
 
         if not book:

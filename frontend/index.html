@@ -37,6 +37,17 @@
                         <!-- Book rows will be added here by JavaScript -->
                     </tbody>
                 </table>
+                <form>
+                    <div class="mb-3">
+                        <h3>loan book</h3>
+                        <label for="book_name" class="form-label">Book Name</label>
+                        <input type="text" class="form-control" id="bookName" placeholder="Enter Book Name">
+                        <label for="custID" class="form-label">custID</label>
+                        <input type="text" class="form-control" id="custID" placeholder="Enter custID">
+                        <label for="LoanDate" class="form-label">Loan Date</label>
+                        <input type="date" class="form-control" id="LoanDate" placeholder="Enter Loan Date">
+                        <button type="button" class="btn btn-primary" onclick="loanBook()">Submit</button>
+                </form>
             </div>
         </div>
 
@@ -53,7 +64,7 @@
         async function fetchBooks() {
             try {
                 const accessToken = sessionStorage.getItem('jwtToken');
-                console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
+               // console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
     
                 if (!accessToken) {
                     console.error('No JWT Token found');
@@ -81,23 +92,62 @@
             }   //more elaborate error for debugging 
             catch (error) {
                 console.error('Error fetching books:', error.message);
-                if (error.response) {
-                    // The request was made and the server responded with a status code
-                    // that falls out of the range of 2xx
-                    console.error(error.response.data);
-                    console.error(error.response.status);
-                    console.error(error.response.headers);
-                } else if (error.request) {
-                    // The request was made but no response was received
-                    console.error(error.request);
-                } else {
-                    // Something happened in setting up the request that triggered an Error
-                    console.error('Error', error.message);
-                }
+                //if (error.response) {
+                //    // The request was made and the server responded with a status code
+                //    // that falls out of the range of 2xx
+                //    console.error(error.response.data);
+                //    console.error(error.response.status);
+                //    console.error(error.response.headers);
+                //} else if (error.request) {
+                //    // The request was made but no response was received
+                //    console.error(error.request);
+                //} else {
+                //    // Something happened in setting up the request that triggered an Error
+                //    console.error('Error', error.message);
+                //}
             }
         }
 
+            // Function to add a new book
+    async function loanBook() {
+        const bookName = document.getElementById('book_name').value;
+        const custID= document.getElementById('custID').value;
+        const LoanDate = document.getElementById('LoanDate').value;
+        try {
+            await axios.post(`${MY_SERVER}/loan_book`, {
+                name: bookName,
+                custID,
+                LoanDate: LoanDate
+            });
+            // Clear form fields
+            document.getElementById('book_name').value = '';
+            document.getElementById('custID').value = '';
+            document.getElementById('LoanDate').value = '';
+            // Fetch and display updated book list
+            loanBook();
+        } catch (error) {
+            console.error('Error fetching books:', error.message);
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.error(error.response.data);
+                console.error(error.response.status);
+                console.error(error.response.headers);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error(error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.error('Error', error.message);
+            }
+        }
+    }
 
+    // Function to search book
+    async function searchBook() {
+        const bookName = document.getElementById('book_name').value;
+        console.log(bookName);
+    }
         // Initial fetch and display books on page load
         fetchBooks();
     </script>
@@ -118,7 +168,9 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="index.html">Book system</a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="loans.html">Loans list</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="login.html">login</a>
                     </li>
