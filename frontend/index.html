@@ -11,179 +11,160 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
+<!-- Existing Head section remains the same -->
+
 <body>
-    <!-- Existing Head section remains the same -->
+    <!-- Existing Navbar and other sections remain the same -->
 
-    <body>
-        <!-- Existing Navbar and other sections remain the same -->
+    <div class="container mt-4">
+        <h2>Library Management System</h2>
 
-        <div class="container mt-4">
-            <h2>Library Management System</h2>
+        <!-- Show Books in Table Format -->
+        <div id="showBooks">
+            <h3>Show Books</h3>
 
-            <!-- Show Books in Table Format -->
-            <div id="showBooks">
-                <h3>Show Books</h3>
+            <div>
+                <div class="mb-3">
+                    <label for="book_name" class="form-label">Search Book By Name</label>
+                    <input type="text" class="form-control" id="bookName" placeholder="Enter Book Name">
+                    <button type="button" class="btn btn-primary" onclick="searchBook()">Search</button>
+                    <!-- show search result -->
+                    <div id="searchResult">
+                    </div>
 
-                <table class="table mt-3">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Author</th>
-                            <th>Year Published</th>
-                            <th>Type</th>
-                        </tr>
-                    </thead>
-                    <tbody id="booksTableBody">
-                        <!-- Book rows will be added here by JavaScript -->
-                    </tbody>
-                </table>
-                <form>
-                    <div class="mb-3">
-                        <h3>loan book</h3>
-                        <label for="book_name" class="form-label">Book Name</label>
-                        <input type="text" class="form-control" id="bookName" placeholder="Enter Book Name">
-                        <label for="custID" class="form-label">custID</label>
-                        <input type="text" class="form-control" id="custID" placeholder="Enter custID">
-                        <label for="LoanDate" class="form-label">Loan Date</label>
-                        <input type="date" class="form-control" id="LoanDate" placeholder="Enter Loan Date">
-                        <button type="button" class="btn btn-primary" onclick="loanBook()">Submit</button>
-                </form>
-            </div>
-        </div>
+                    <table class="table mt-3">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Author</th>
+                                <th>Year Published</th>
+                                <th>Type</th>
+                                <th>Picture</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksTableBody">
+                            <!-- Book rows will be added here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
 
 
-    </body>
+                <!-- Main Script -->
+                <script>
+                    const MY_SERVER = 'http://localhost:5000';
 
+                    async function fetchBooks() {
+                        try {
+                            const accessToken = sessionStorage.getItem('jwtToken');
+                            // console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
 
+                            if (!accessToken) {
+                                console.error('No JWT Token found');
+                                // Handle the scenario where the token is missing
+                                return;
+                            }
 
+                            const response = await axios.get(`${MY_SERVER}/show_books`, {
+                                headers: {
+                                    'Authorization': `Bearer ${accessToken}`
+                                }
+                            });
 
-    <!-- Main Script -->
-    <script>
-        const MY_SERVER = 'http://localhost:5000';
-    
-        async function fetchBooks() {
-            try {
-                const accessToken = sessionStorage.getItem('jwtToken');
-               // console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
-    
-                if (!accessToken) {
-                    console.error('No JWT Token found');
-                    // Handle the scenario where the token is missing
-                    return;
-                }
-    
-                const response = await axios.get(`${MY_SERVER}/show_books`, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-    
-                const books = response.data.books;
-                const booksTableBody = document.getElementById('booksTableBody');
-                booksTableBody.innerHTML = '';
+                            const books = response.data.books;
+                            const booksTableBody = document.getElementById('booksTableBody');
+                            booksTableBody.innerHTML = '';
 
-                books.forEach(book => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${book.name}</td>
+                            books.forEach(book => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `<td>${book.name}</td>
                     <td>${book.author}</td><td>${book.year_published}</td>
-                    <td>${book.type}</td>}`;
-                    booksTableBody.appendChild(row);
-                });
-            }   //more elaborate error for debugging 
-            catch (error) {
-                console.error('Error fetching books:', error.message);
-                //if (error.response) {
-                //    // The request was made and the server responded with a status code
-                //    // that falls out of the range of 2xx
-                //    console.error(error.response.data);
-                //    console.error(error.response.status);
-                //    console.error(error.response.headers);
-                //} else if (error.request) {
-                //    // The request was made but no response was received
-                //    console.error(error.request);
-                //} else {
-                //    // Something happened in setting up the request that triggered an Error
-                //    console.error('Error', error.message);
-                //}
-            }
-        }
+                    <td>${book.type}</td><td>${book.picture}</td>`;
+                                booksTableBody.appendChild(row);
+                            });
+                        }   //more elaborate error for debugging 
+                        catch (error) {
+                            console.error('Error fetching books:', error.message);
+                            //if (error.response) {
+                            //    // The request was made and the server responded with a status code
+                            //    // that falls out of the range of 2xx
+                            //    console.error(error.response.data);
+                            //    console.error(error.response.status);
+                            //    console.error(error.response.headers);
+                            //} else if (error.request) {
+                            //    // The request was made but no response was received
+                            //    console.error(error.request);
+                            //} else {
+                            //    // Something happened in setting up the request that triggered an Error
+                            //    console.error('Error', error.message);
+                            //}
+                        }
+                    } fetchBooks();
 
-            // Function to add a new book
-    async function loanBook() {
-        const bookName = document.getElementById('book_name').value;
-        const custID= document.getElementById('custID').value;
-        const LoanDate = document.getElementById('LoanDate').value;
-        try {
-            await axios.post(`${MY_SERVER}/loan_book`, {
-                name: bookName,
-                custID,
-                LoanDate: LoanDate
-            });
-            // Clear form fields
-            document.getElementById('book_name').value = '';
-            document.getElementById('custID').value = '';
-            document.getElementById('LoanDate').value = '';
-            // Fetch and display updated book list
-            loanBook();
-        } catch (error) {
-            console.error('Error fetching books:', error.message);
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                console.error(error.response.data);
-                console.error(error.response.status);
-                console.error(error.response.headers);
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.error(error.request);
-            } else {
-                // Something happened in setting up the request that triggered an Error
-                console.error('Error', error.message);
-            }
-        }
-    }
+                    // Function to search book
+                    async function searchBook() {
+                        const accessToken = sessionStorage.getItem('jwtToken');
+                        const bookNameInput = document.getElementById('book');
 
-    // Function to search book
-    async function searchBook() {
-        const bookName = document.getElementById('book_name').value;
-        console.log(bookName);
-    }
-        // Initial fetch and display books on page load
-        fetchBooks();
-    </script>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Library System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <img width="40"
-                    src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="home.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="index.html">Book system</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="loans.html">Loans list</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.html">login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="register.html">register</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="logout.html">logout</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+                        try {
+                            const response = await axios.post(`${MY_SERVER}/search_book`, {
+                                headers: {
+                                    'Authorization': `Bearer ${accessToken}`
+                                },
+                                data: {
+                                    name: bookNameInput
+                                }
+                            });
+
+                            displaySearchResults(response.data);
+
+                        } catch (error) {
+
+                            console.error('Error searching books:', error.message);
+                        }
+                    }
+                    // Add CORS middleware to backend to handle CORS
+                    searchBook();
+
+
+
+
+
+                </script>
+                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                    <div class="container-fluid">
+                        <a class="navbar-brand" href="#">Library System</a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                            aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <img width="40"
+                                src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="home.html">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="index.html">Book system</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="loans.html">Loans
+                                        system</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="login.html">login</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="register.html">register</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="logout.html">logout</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
 </body>
 
 </html>

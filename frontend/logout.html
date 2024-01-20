@@ -44,23 +44,39 @@
         async function logout() {
             // Extract JWT token
             const jwtToken = localStorage.getItem('jwtToken');
-    
+
             try {
                 // AJAX request to server for logout
                 const response = await axios.post(`${MY_SERVER}/logout`, {}, {
                     headers: {
-                        'Authorization': 'Bearer ' + jwtToken 
+                        'Authorization': 'Bearer ' + jwtToken
                     }
                 });
-    
+
                 console.log('Logout successful', response.data);
+                tostify.success('Logout successful');
+
+                // Block access to other endpoints
+                axios.interceptors.response.use(
+                    response => response,
+                    error => {
+                        if (error.response.status === 401) {
+                            window.location.href = '/login.html';
+                            return Promise.reject(error);
+                        }
+                        return Promise.reject(error);
+                    }
+                );
+
                 // Clear JWT token from storage and redirect
                 localStorage.removeItem('jwtToken');
                 window.location.href = '/login.html';
+
             } catch (error) {
                 console.error('Error during logout:', error);
             }
         }
+
     </script>
     
 

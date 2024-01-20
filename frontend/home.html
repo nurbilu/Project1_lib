@@ -38,7 +38,7 @@
                         <a class="nav-link active" aria-current="page" href="index.html">Book system</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="loans.html">Loans list</a>
+                        <a class="nav-link active" aria-current="page" href="loans.html">Loans system</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="login.html">login</a>
@@ -57,23 +57,29 @@
         const MY_SERVER = "http://localhost:5000";
         // JavaScript functions to handle button clicks
         function bookTest() {
-            
-            axios.post(`${MY_SERVER}/book_test`)
+            // Replace 'your_jwt_token' with the actual JWT token
+            const accessToken = sessionStorage.getItem('jwtToken');
+
+            axios.post(`${MY_SERVER}/book_test`, {}, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
                 .then(function (response) {
                     console.log(response.data);
                 })
                 .catch(function (error) {
                     console.log(error);
                 });
-        }
+            }
         
 
         function customerTest() {
             // Replace 'your_jwt_token' with the actual JWT token
-            const token = 'your_jwt_token';
+            const accessToken = sessionStorage.getItem('jwtToken');
             axios.post(`${MY_SERVER}/customer_test`, {}, {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${accessToken}`
                 }
             })
             .then(function (response) {
@@ -85,10 +91,10 @@
         }
         function loanTest() {
             // Replace 'your_jwt_token' with the actual JWT token
-            const token = 'your_jwt_token';
+            const accessToken = sessionStorage.getItem('jwtToken');
             axios.post(`${MY_SERVER}/loan_test`, {}, {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${accessToken}`
                 }
             })
             .then(function (response) {
@@ -100,10 +106,10 @@
         }
         function loanTest() {
             // Replace 'your_jwt_token' with the actual JWT token
-            const token = 'your_jwt_token';
+            const accessToken = sessionStorage.getItem('jwtToken');
             axios.post(`${MY_SERVER}/loan_test`, {}, {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${accessToken}`
                 }
             })
             .then(function (response) {

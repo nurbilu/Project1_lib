@@ -5,7 +5,7 @@ from flask_jwt_extended import JWTManager, jwt_required, create_access_token, ge
 import sqlite3
 from flask_cors import CORS , cross_origin
 from datetime import date 
-from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm import class_mapper , joinedload
 from werkzeug.utils import secure_filename
 import jwt
 from flask_bcrypt import Bcrypt
@@ -14,9 +14,9 @@ import datetime
 
 
 app = Flask(__name__)
+api = Api(app)
 CORS(app)
 app.secret_key = 'secret_secret_key'
-api = Api(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/library' # change this to your own mysql database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -67,12 +67,14 @@ class Books(db.Model):
     name = db.Column(db.String(255), nullable=False)
     author = db.Column(db.Text)
     year_published = db.Column(db.Integer, nullable=False)
-    Type = db.Column(db.String(10))
+    Type = db.Column(db.String(50))
+    picture = db.Column(db.String(500))
     def __init__ (self, name, author, year_published, Type):
         self.name = name
         self.author = author
         self.year_published = year_published
-        self.Type = Type
+        self.Type = Type(1,2,3)
+        self.picture = 'default.jpg'
     
 class Customers(db.Model):
     custID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -121,7 +123,8 @@ def show_books():
                 'name': book.name,
                 'author': book.author,
                 'year_published': book.year_published,
-                'Type': book.Type
+                'Type': book.Type,
+                'picture': book.picture
             }
             book_list.append(book_data)
 
@@ -140,7 +143,8 @@ def add_book():
                 name=data['name'],
                 author=data['author'],
                 year_published=data['year_published'],
-                Type=data['Type']
+                Type=data['Type'],
+                picture=data['picture']
             )
 
             db.session.add(new_book)
@@ -189,55 +193,70 @@ def show_customers():
 #         return jsonify({'message': 'Customer added successfully'})
  
 # show all loans
-@app.route("/show_loans", methods=['GET'])
+@app.route("/show_loans", methods=["GET"])
 @jwt_required()
 def show_loans():
     current_custID = get_jwt_identity()
-    if request.method == 'GET':
+    if request.method == "GET":
         loans = Loans.query.all()
         loan_list = []
         for loan in loans:
+            customer = Customers.query.filter_by(custID=loan.custID).first()
+            book = Books.query.filter_by(bookID=loan.bookID).first()
+
             loan_data = {
-                'id': loan.loanID,
-                'custID': loan.custID,
-                'bookID': loan.bookID,
-                'LoanDate': loan.LoanDate,
-                'ReturnDate': loan.ReturnDate
+                "id": loan.loanID,
+                "customer_name": customer.name,
+                "book_name": book.name,
+                "LoanDate": loan.LoanDate,
+                "ReturnDate": loan.ReturnDate,
             }
             loan_list.append(loan_data)
-        return jsonify({'loans': loan_list})
+
+        return jsonify({"loans": loan_list})
+
 
 # add new loan to table loans
-@app.route("/loan_book", methods=['POST'])
+@app.route("/loan_book", methods=["POST"])
 @jwt_required()
 def loan_book():
     current_custID = get_jwt_identity()
-    if request.method == 'POST':
+    if request.method == "POST":
         data = request.get_json()
-        book_name = data.get('book_name')
-        custID = data.get('custID')
-        loanDate = data.post(date.today())
-        returnDate = data.get('ReturnDate')
-
-        if not book_name or not custID or not loanDate or not returnDate:
-            return jsonify({'message': 'Invalid request. Please provide book_name, custID, LoanDate, and ReturnDate in the request.'}), 400
+        book_name = data.get("book_name")
+        customer_name = data.get("customer_name")
+        loanDate = data.get("LoanDate")
+        returnDate = data.get("ReturnDate")
+        print(book_name, customer_name, loanDate, returnDate)
+        if not book_name or not customer_name or not returnDate:
+            return jsonify({
+                "message": "Invalid request. Please provide fields required."
+            }), 400
 
         book = Books.query.filter_by(name=book_name).first()
-        customer = Customers.query.filter_by(custID=custID).first()
+        customer = Customers.query.filter_by(name=customer_name).first()
 
         if not book or not customer:
-            return jsonify({'message': 'Book or customer not found.'}), 404
+            return jsonify({
+                "message": "Book or customer not found."
+            }), 404
 
         new_loan = Loans(
-            custID=custID,
+            custID=customer.custID,
             bookID=book.bookID,
             LoanDate=loanDate,
-            ReturnDate=returnDate
+            ReturnDate=returnDate,
         )
         db.session.add(new_loan)
         db.session.commit()
+        print(book_name, customer_name, loanDate, returnDate)
+        return jsonify({
+            "message": "Book loaned successfully"
+        })
 
-        return jsonify({'message': 'Book loaned successfully'})
+
+
+
 
 # return book and delete loan from db 
 @app.route("/return_book", methods=['POST'])
@@ -289,11 +308,14 @@ def search_book():
                 'name': book.name,
                 'author': book.author,
                 'year_published': book.year_published,
-                'Type': book.Type
+                'Type': book.Type,
+                'picture': book.picture
             }
             return jsonify({'book': book_data})
         else:
             return jsonify({'message': 'Book not found'})
+        
+
 
 # search customer by name 
 @app.route("/search_customer/", methods=['POST'])
@@ -344,9 +366,48 @@ def book_test():
     current_custID = get_jwt_identity()
     if request.method == 'POST':
         books_data = [
-            {"name": "1984", "author": "George Orwell", "year_published": 1949, "Type": "2 days"},
-            {"name": "To Kill a Mockingbird", "author": "Harper Lee", "year_published": 1960, "Type": "5 days"},
-            {"name": "The Great Gatsby", "author": "F. Scott Fitzgerald", "year_published": 1925, "Type": "10 days"}
+            {
+                "name": "The Hobbit",
+                "author": "J.R.R. Tolkien",
+                "year_published": 1937,
+                "Type": "2 days",
+                "picture": "https://upload.wikimedia.org/wikipedia/en/thumb/1/18/The_Hobbit_cover.jpg/220px-The_Hobbit_cover.jpg",
+            },
+            {
+                "name": "The Catcher in the Rye",
+                "author": "J.D. Salinger",
+                "year_published": 1951,
+                "Type": "5 days",
+                "picture": "https://upload.wikimedia.org/wikipedia/en/thumb/2/22/The_Catcher_in_the_Rye_cover.jpg/220px-The_Catcher_in_the_Rye_cover.jpg",
+            },
+            {
+                "name": "The Lion, the Witch and the Wardrobe",
+                "author": "C.S. Lewis",
+                "year_published": 1950,
+                "Type": "10 days",
+                "pciture": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1c/The_Lion_the_Witch_and_the_Wardrobe_cover.jpg/220px-The_Lion_the_Witch_and_the_Wardrobe_cover.jpg",
+            },
+            {
+                "name": "To Kill a Mockingbird",
+                "author": "Harper Lee",
+                "year_published": 1960,
+                "Type": "5 days",
+                "picture": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/To_Kill_a_Mockingbird_cover.jpg/220px-To_Kill_a_Mockingbird_cover.jpg",
+            },
+            {
+                "name": "The Great Gatsby",
+                "author": "F. Scott Fitzgerald",
+                "year_published": 1925,
+                "Type": "10 days",
+                "picture": "https://upload.wikimedia.org/wikipedia/en/thumb/6/63/The_Great_Gatsby_cover.jpg/220px-The_Great_Gatsby_cover.jpg",
+            },
+            {
+                "name": "1984",
+                "author": "George Orwell",
+                "year_published": 1949,
+                "Type": "2 days",
+                "picture": "https://upload.wikimedia.org/wikipedia/en/thumb/9/9e/1984_cover.jpg/220px-1984_cover.jpg",
+            },
         ]
 
         for book_data in books_data:
@@ -386,9 +447,9 @@ def customer_test():
 @jwt_required()
 def loan_test():
     current_custID = get_jwt_identity()
-    timedelta = date.today
+    GMT = pytz.timezone('GMT')
     if request.method == 'POST':
-        test_loan_data = {"book_name": "1984","custID": 1,"LoanDate": date.today(), "ReturnDate": "2024-01-21" }
+        test_loan_data = {"book_name": "1984","custID": 5,"LoanDate": date.today(GMT), "ReturnDate": "2024-01-21" }
         book = Books.query.filter_by(name=test_loan_data['book_name']).first()
 
         if not book:
@@ -454,28 +515,38 @@ def login():
 
 # logout costumer
 # fix logout so it blocks connction to the other endpoints 
-@app.route("/logout", methods=['POST'])
+@app.route("/logout", methods=["POST"])
 def logout():
-    if request.method == 'POST':
+    if request.method == "POST":
         # Extract and decode the token
-        auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith('Bearer '):
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
             try:
                 payload = decode_token(token)
                 # Invalidate the token
                 invalidate_token(token)
-                return jsonify({'message': 'Logout successful'}), 200
+                session.clear()  # clear the session
+                return jsonify({"message": "Logout successful"}), 200
             except jwt.ExpiredSignatureError:
                 # Handle expired token case
-                return jsonify({'message': 'Token has expired'}), 401
+                return jsonify({"message": "Token has expired"}), 401
             except jwt.InvalidTokenError:
                 # Handle invalid token case
-                return jsonify({'message': 'Invalid token'}), 401
+                return jsonify({"message": "Invalid token"}), 401
         else:
-            return jsonify({'message': 'Bearer token not provided'}), 401
+            return jsonify({"message": "Bearer token not provided"}), 401
 
 
+@app.route('/customer_book_list', methods=['GET'])
+def get_customer_book_list():
+    result = db.session.query(Customers.name, Books.name)\
+                    .join(Loans, Customers.custID == Loans.custID)\
+                    .join(Books, Loans.bookID == Books.bookID)\
+                    .all()
+
+    # Format the result as desired, e.g., return a JSON response
+    return jsonify([{"customer": customer_name, "book": book_name} for customer_name, book_name in result])
 
 
 # gereate a token for the costumer as user fo library 
