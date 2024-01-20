@@ -53,12 +53,12 @@
         <div>
             <div class="mb-4">
                 <h3>Return Book</h3>
-                <label for="book_name" class="form-label">Book Name</label>
+                <label for="bookName" class="form-label">Book Name</label>
                 <input type="text" class="form-control" id="bookName" placeholder="Enter Book Name">
-                <label for="customer" class="form-label">Customer Name</label>
-                <input type="text" class="form-control" id="customer" placeholder="Enter Customer Name">
-                <label for="LoanDate" class="form-label">Loan Date</label> 
-                <input type="date" class="form-control" id="LoanDate" placeholder="Enter Loan Date">
+                <label for="customerName" class="form-label">Customer Name</label>
+                <input type="text" class="form-control" id="customerName" placeholder="Enter Customer Name">
+                <label for="Loan_Date" class="form-label">Loan Date</label> 
+                <input type="date" class="form-control" id="Loan_Date" placeholder="Enter Loan Date">
                 <button type="button" class="btn btn-primary" onclick="returnBook()">Submit</button>
         </div>
         </div>
@@ -136,11 +136,6 @@
                         'Authorization': `Bearer ${accessToken}`
                     }
                 });
-                // Handle 400 error
-                if (response.status === 400) {
-                    console.error('Error loaning book:', response.data.message);
-                    return;
-                }
 
                 // Clear form fields
                 document.getElementById('book_name').value = '';
@@ -150,38 +145,39 @@
                 // Fetch and display updated book list
 
             } catch (error) {
-                console.error('Error loaning book:', error.response.data);
+                console.error('Error loaning book:', error.message);
+
             }
         }
 
-        loanBook();
-
-
-
-
+        //loanBook();
 
         async function returnBook() {
-            const bookName = document.getElementById('bookName').value;
-            const custID = document.getElementById('customer').value;
-            const LoanDate = document.getElementById('LoanDate').value;
+            const bookName = document.getElementById('book_name')?.value;
+            const customerName = document.getElementById('customer_name')?.value;
+            const Loan_Date = document.getElementById('LoanDate')?.value;
 
             try {
                 const accessToken = sessionStorage.getItem('jwtToken');
 
+                // Add CORS headers to allow cross-origin request
+                const headers = {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Access-Control-Allow-Origin': '*'
+                };
+
                 await axios.post(`${MY_SERVER}/return_book`, {
                     name: bookName,
-                    custID: customer_name,
-                    LoanDate: LoanDate
+                    customerName: customerName,
+                    LoanDate: Loan_Date
                 }, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
+                    headers: headers
                 });
 
                 // Clear form fields
                 document.getElementById('bookName').value = '';
                 document.getElementById('customer').value = '';
-                document.getElementById('LoanDate').value = '(MM-DD-YYYY)';
+                document.getElementById('Loan_Date').value = '';
 
                 // Fetch and display updated book list
 
@@ -198,10 +194,12 @@
                 } else if (error.request) {
                     // The request was made but no response was received
                     console.error(error.request);
-
                 }
             }
         }
+
+        returnBook();
+
 
 
 

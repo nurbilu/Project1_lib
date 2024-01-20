@@ -20,18 +20,18 @@
         <h2>Library Management System</h2>
 
         <!-- Show Books in Table Format -->
-        <div id="showBooks">
-            <h3>Show Books</h3>
 
-            <div>
-                <div class="mb-3">
-                    <label for="book_name" class="form-label">Search Book By Name</label>
-                    <input type="text" class="form-control" id="bookName" placeholder="Enter Book Name">
-                    <button type="button" class="btn btn-primary" onclick="searchBook()">Search</button>
-                    <!-- show search result -->
-                    <div id="searchResult">
-                    </div>
+        <div>
+            <div id="searchBook",class="mb-3">
+                <label for="book_name" class="form-label">Search Book By Name</label>
+                <input type="text" class="form-control" id="book_name" placeholder="Enter Book Name">
+                <button type="button" class="btn btn-primary" onclick="searchBook()">Search</button>
+                <!-- show search result -->
+                <div id="searchResult">
+                </div>
 
+                <div id="showBooks">
+                    <h3>Show Books</h3>
                     <table class="table mt-3">
                         <thead>
                             <tr>
@@ -103,27 +103,32 @@
                     // Function to search book
                     async function searchBook() {
                         const accessToken = sessionStorage.getItem('jwtToken');
-                        const bookNameInput = document.getElementById('book');
+                        const bookElement = document.getElementById('book_name');
+
+                        if (!bookElement) {
+                            console.error("Book input element not found");
+                            return;
+                        }
+
+                        const bookName = bookElement.value;
 
                         try {
-                            const response = await axios.post(`${MY_SERVER}/search_book`, {
-                                headers: {
-                                    'Authorization': `Bearer ${accessToken}`
-                                },
-                                data: {
-                                    name: bookNameInput
-                                }
+                            const response = await axios.post(`${MY_SERVER}/search_book/`, {
+                                name: bookName
+                            }, {
+                                headers: { 'Authorization': `Bearer ${accessToken}` }
                             });
 
-                            displaySearchResults(response.data);
+                            console.log(response.data);
 
                         } catch (error) {
-
                             console.error('Error searching books:', error.message);
                         }
                     }
-                    // Add CORS middleware to backend to handle CORS
                     searchBook();
+
+
+
 
 
 

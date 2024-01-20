@@ -15,7 +15,7 @@ import datetime
 
 app = Flask(__name__)
 api = Api(app)
-CORS(app)
+CORS(app ,cross_origin=True)
 app.secret_key = 'secret_secret_key'
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/library' # change this to your own mysql database
@@ -216,10 +216,19 @@ def show_loans():
         return jsonify({"loans": loan_list})
 
 
+
+def fetch_customer_book_list():
+    result = db.session.query(Customers.name, Books.name)\
+                    .join(Loans, Customers.custID == Loans.custID)\
+                    .join(Books, Loans.bookID == Books.bookID)\
+                    .all()
+    return result
+
 # add new loan to table loans
 @app.route("/loan_book", methods=["POST"])
 @jwt_required()
 def loan_book():
+    join = fetch_customer_book_list()
     current_custID = get_jwt_identity()
     if request.method == "POST":
         data = request.get_json()
@@ -229,17 +238,17 @@ def loan_book():
         returnDate = data.get("ReturnDate")
         print(book_name, customer_name, loanDate, returnDate)
         if not book_name or not customer_name or not returnDate:
-            return jsonify({
-                "message": "Invalid request. Please provide fields required."
-            }), 400
-
+            return (
+                jsonify(
+                    {"message": "Invalid request. Please provide fields required."}
+                ),
+                400,
+            )
         book = Books.query.filter_by(name=book_name).first()
         customer = Customers.query.filter_by(name=customer_name).first()
 
         if not book or not customer:
-            return jsonify({
-                "message": "Book or customer not found."
-            }), 404
+            return jsonify({"message": "Book or customer not found."}), 404
 
         new_loan = Loans(
             custID=customer.custID,
@@ -249,11 +258,9 @@ def loan_book():
         )
         db.session.add(new_loan)
         db.session.commit()
-        print(book_name, customer_name, loanDate, returnDate)
-        return jsonify({
-            "message": "Book loaned successfully"
-        })
 
+        print(book_name, customer_name, loanDate, returnDate)
+        return jsonify({"message": "Book loaned successfully"})
 
 
 
@@ -265,13 +272,13 @@ def return_book():
     current_custID = get_jwt_identity()
     if request.method == 'POST':
         data = request.get_json()
-        book_name = data.get('book_name')
-        customer_name = data.get('customer_name')
+        book_name = data.get('book_name').join
+        customer_name = data.get('customer_name').join
         
         if not book_name or not customer_name:
             return jsonify({'message': 'Invalid request. Please provide both book_name and customer_name in the request.'}), 400
-        book = Books.query.filter_by(name=book_name).first()
-        customer = Customers.query.filter_by(name=customer_name).first()
+        book = Books.query.filter_by(name=book_name).fetch_customer_book_list()
+        customer = Customers.query.filter_by(name=customer_name).fetch_customer_book_list()
 
         if not book or not customer:
             return jsonify({'message': 'Book or customer not found.'}), 404
@@ -281,7 +288,7 @@ def return_book():
         if not loan:
             return jsonify({'message': 'Loan not found.'}), 404
 
-        return_date = date.today()
+        return_date = data.get('ReturnDate')
 
         if return_date:
             loan.ReturnDate = return_date
@@ -298,6 +305,7 @@ def return_book():
 @app.route("/search_book/", methods=['POST'])
 @jwt_required()
 def search_book():
+    join = get_customer_book_list()
     current_custID = get_jwt_identity()
     if request.method == 'POST':
         data = request.get_json()
