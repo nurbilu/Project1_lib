@@ -65,32 +65,18 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-        <form>
+        <div>
             <div class="mb-4">
-                <h3>loan book</h3>
+                <h3>Return Book</h3>
                 <label for="name" class="form-label">Book Name</label>
                 <input type="text" class="form-control" id="name" placeholder="Enter Book Name">
                 <label for="customer_name" class="form-label">Customer Name</label>
                 <input type="text" class="form-control" id="customer_name" placeholder="Enter Customer Name">
-                <label for="Loan_date" class="form-label">Loan Date</label>
-                <input type="date" class="form-control" id="Loan_date" placeholder="Enter Loan Date">
-                <button type="button" class="btn btn-primary" onclick="loanBook()">Submit</button>
-        </form>
-        </div>
-        <div>
-            <div class="mb-4">
-                <h3>Return Book</h3>
-                <label for="bookName" class="form-label">Book Name</label>
-                <input type="text" class="form-control" id="bookName" placeholder="Enter Book Name">
-                <label for="customerName" class="form-label">Customer Name</label>
-                <input type="text" class="form-control" id="customerName" placeholder="Enter Customer Name">
-                <label for="LoanDate" class="form-label">Loan Date</label>
-                <input type="date" class="form-control" id="LoanDate" placeholder="Enter Loan Date">
+                <label for="ReturnDate" class="form-label">ReturnDate</label>
+                <input type="date" class="form-control" id="ReturnDate" placeholder="Enter Return Date">
                 <button type="button" class="btn btn-primary" onclick="returnBook()">Submit</button>
             </div>
         </div>
-
         <!-- Main Script -->
         <script>
             const MY_SERVER = 'http://localhost:5000';
@@ -130,13 +116,11 @@
                     const customerName = document.getElementById('customer_name')?.value;
                     const Loan_date = document.getElementById('LoanDate')?.value;
 
-                    // Get access token
                     const accessToken = sessionStorage.getItem('jwtToken');
                     if (!accessToken) {
                         throw new Error('No access token found');
                     }
 
-                    // Make API request
                     const response = await axios.post(`${MY_SERVER}/loan_book`, {
                         name: bookName,
                         customer_name: customerName,
@@ -148,7 +132,6 @@
                         }
                     });
 
-                    // Handle response  
                     if (response.status !== 200) {
                         throw new Error('Error loaning book');
                     }
@@ -165,48 +148,56 @@
         </script>
         <script>
             returnBook = async () => {
-                const bookName = document.getElementById('name')?.value;
-                const customerName = document.getElementById('customer_name')?.value;
-                const Loan_Date = document.getElementById('LoanDate')?.value;
+                const bookNameElement = document.getElementById('name');
+                const customerNameElement = document.getElementById('customer_name');
+                const returnDateElement = document.getElementById('ReturnDate');
+            
+                console.log('Book Name Element:', bookNameElement);
+                console.log('Customer Name Element:', customerNameElement);
+                console.log('Return Date Element:', returnDateElement);
+            
+                const bookName = bookNameElement?.value;
+                const customerName = customerNameElement?.value;
+                const returnDate = returnDateElement?.value;
+            
+                console.log('Book Name:', bookName);
+                console.log('Customer Name:', customerName);
+                console.log('Return Date:', returnDate);
+                
+                document.getElementById('name').addEventListener('change', (event) => {
+                    console.log('Book Name Changed:', event.target.value);
+                });
+                document.getElementById('customer_name').addEventListener('change'), (event) => {
+                    console.log('Customer Name Changed:', event.target.value);}
 
                 try {
+                    const Content_Type = 'application/json';
                     const accessToken = sessionStorage.getItem('jwtToken');
-
-                    // Add CORS headers to allow cross-origin request
-                    const headers = {};
-
+                    const headers = {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': `application/json ${Content_Type}`
+                    };
                     const response = await axios.post(`${MY_SERVER}/return_book`, {
                         name: bookName,
-                        customerName: customerName,
-                        LoanDate: Loan_Date
-                    }, {
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'content-type': `application/json`,
-                            'Access-Control-Allow-Origin': '*'
-                        }
-                    });
+                        customer_name: customerName,
+                        ReturnDate: returnDate
+                    }, { headers });
 
                     // Fetch and display updated book list
-
                 } catch (error) {
                     console.error('Error fetching books:', error.message);
-
                     if (error.response) {
-                        // The request was made and the server responded with a status code
-                        // that falls out of the range of 2xx
                         console.error(error.response.data);
                         console.error(error.response.status);
                         console.error(error.response.headers);
 
                     } else if (error.request) {
-                        // The request was made but no response was received
                         console.error(error.request);
                     }
                 }
             }
 
-            returnBook();
+
 
         </script>
     </body>

@@ -21,7 +21,7 @@ api = Api(app)
 CORS(app)
 app.secret_key = 'secret_secret_key'
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/library' # change this to your own mysql database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:MYSQLnur1996##@localhost/library' # change this to your own mysql database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
 db = SQLAlchemy(app)
@@ -295,10 +295,10 @@ def return_book():
         
         if not book_name or not customer_name:
             return jsonify({'message': 'Invalid request. Please provide both name and customer_name in the request.'}), 400
-        book = Books.query.filter_by(name=name).fetch_customer_book_list()
+        book = Books.query.filter_by(name=book_name).fetch_customer_book_list()
         customer = Customers.query.filter_by(name=customer_name).fetch_customer_book_list()
 
-        if not book or not customer:
+        if not book_name or not customer:
             return jsonify({'message': 'Book or customer not found.'}), 404
 
         loan = Loans.query.filter_by(bookID=book.bookID, custID=customer.custID).first()
@@ -338,6 +338,7 @@ def search_book():
                 'book_name': book.name,
                 'author': book.author,
                 'year_published': book.year_published,
+                'book_type': book.book_type,
                 'PIC_link': book.PIC_link
             }
             return jsonify({'book': book_data})
