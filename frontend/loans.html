@@ -15,7 +15,33 @@
     <!-- Existing Head section remains the same -->
 
     <body>
-        <!-- Existing Navbar and other sections remain the same -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img width="40"
+                        src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
+                Library System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link active" href="home.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html">Book system</a></li>
+                    <li class="nav-item"><a class="nav-link" href="loans.html">Loans system</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="logout.html">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Bootstrap JS and its dependencies (jQuery and Popper) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
         <div class="container mt-4">
             <h2>Library Management System</h2>
@@ -30,6 +56,7 @@
                             <th>customer</th>
                             <th>book name</th>
                             <th>LoanDate</th>
+                            <th>ReturnDate</th>
                         </tr>
                     </thead>
                     <tbody id="loansTableBody">
@@ -41,12 +68,12 @@
         <form>
             <div class="mb-4">
                 <h3>loan book</h3>
-                <label for="book_name" class="form-label">Book Name</label>
-                <input type="text" class="form-control" id="bookName" placeholder="Enter Book Name">
-                <label for="customer" class="form-label">Customer Name</label>
-                <input type="text" class="form-control" id="customer" placeholder="Enter Customer Name">
-                <label for="LoanDate" class="form-label">Loan Date</label>
-                <input type="date" class="form-control" id="LoanDate" placeholder="Enter Loan Date">
+                <label for="name" class="form-label">Book Name</label>
+                <input type="text" class="form-control" id="name" placeholder="Enter Book Name">
+                <label for="customer_name" class="form-label">Customer Name</label>
+                <input type="text" class="form-control" id="customer_name" placeholder="Enter Customer Name">
+                <label for="Loan_date" class="form-label">Loan Date</label>
+                <input type="date" class="form-control" id="Loan_date" placeholder="Enter Loan Date">
                 <button type="button" class="btn btn-primary" onclick="loanBook()">Submit</button>
         </form>
         </div>
@@ -57,187 +84,141 @@
                 <input type="text" class="form-control" id="bookName" placeholder="Enter Book Name">
                 <label for="customerName" class="form-label">Customer Name</label>
                 <input type="text" class="form-control" id="customerName" placeholder="Enter Customer Name">
-                <label for="Loan_Date" class="form-label">Loan Date</label> 
-                <input type="date" class="form-control" id="Loan_Date" placeholder="Enter Loan Date">
+                <label for="LoanDate" class="form-label">Loan Date</label>
+                <input type="date" class="form-control" id="LoanDate" placeholder="Enter Loan Date">
                 <button type="button" class="btn btn-primary" onclick="returnBook()">Submit</button>
-        </div>
-        </div>
-
-
-
-    </body>
-
-
-
-
-    <!-- Main Script -->
-    <script>
-        const MY_SERVER = 'http://localhost:5000';
-
-        async function showloans() {
-            try {
-                const accessToken = sessionStorage.getItem('jwtToken');
-                console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
-
-                if (!accessToken) {
-                    console.error('No JWT Token found');
-                    // Handle the scenario where the token is missing
-                    return;
-                }
-
-                const response = await axios.get(`${MY_SERVER}/show_loans`, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-
-                const loans = response.data.loans;
-                const loansTableBody = document.getElementById('loansTableBody');
-                loansTableBody.innerHTML = '';
-
-                loans.forEach(loan => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                    <td>${loan.customer_name}</td>
-                    <td>${loan.book_name}</td>
-                    <td>${loan.ReturnDate}</td>}`;
-                    loansTableBody.appendChild(row);
-                });
-            }   //more elaborate error for debugging 
-            catch (error) {
-                console.error('Error fetching loans:', error.message);
-                //if (error.response) {
-                //    // The request was made and the server responded with a status code
-                //    // that falls out of the range of 2xx
-                //    console.error(error.response.data);
-                //    console.error(error.response.status);
-                //    console.error(error.response.headers);
-                //} else if (error.request) {
-                //    // The request was made but no response was received
-                //    console.error(error.request);
-                //} else {
-                //    // Something happened in setting up the request that triggered an Error
-                //    console.error('Error', error.message);
-                //}
-            }
-        }showloans();
-        async function loanBook() {
-            const bookName = document.getElementById('book_name')?.value;
-            const customerName = document.getElementById('customer_name')?.value;
-            const Loan_date = document.getElementById('LoanDate')?.value;
-            try {
-                const accessToken = sessionStorage.getItem('jwtToken');
-                const response = await axios.post(`${MY_SERVER}/loan_book`, {
-                    name: bookName,
-                    customer_name: customerName,
-                    LoanDate: Loan_date
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-
-                // Clear form fields
-                document.getElementById('book_name').value = '';
-                document.getElementById('customer_name').value = '';
-                document.getElementById('LoanDate').value = '';
-
-            // Fetch and display updated book list
-
-            } catch (error) {
-                console.error('Error loaning book:', error.message);
-
-            }
-        }
-
-        //loanBook();
-
-        async function returnBook() {
-            const bookName = document.getElementById('book_name')?.value;
-            const customerName = document.getElementById('customer_name')?.value;
-            const Loan_Date = document.getElementById('LoanDate')?.value;
-
-            try {
-                const accessToken = sessionStorage.getItem('jwtToken');
-
-                // Add CORS headers to allow cross-origin request
-                const headers = {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Access-Control-Allow-Origin': '*'
-                };
-
-                await axios.post(`${MY_SERVER}/return_book`, {
-                    name: bookName,
-                    customerName: customerName,
-                    LoanDate: Loan_Date
-                }, {
-                    headers: headers
-                });
-
-                // Clear form fields
-                document.getElementById('bookName').value = '';
-                document.getElementById('customer').value = '';
-                document.getElementById('Loan_Date').value = '';
-
-                // Fetch and display updated book list
-
-            } catch (error) {
-                console.error('Error fetching books:', error.message);
-
-                if (error.response) {
-                    // The request was made and the server responded with a status code
-                    // that falls out of the range of 2xx
-                    console.error(error.response.data);
-                    console.error(error.response.status);
-                    console.error(error.response.headers);
-
-                } else if (error.request) {
-                    // The request was made but no response was received
-                    console.error(error.request);
-                }
-            }
-        }
-
-        returnBook();
-
-
-
-
-        // Initial fetch and display books on page load
-    </script>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Library System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <img width="40"
-                    src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="home.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="index.html">Book system</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="loans.html">Loans system</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.html">login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="register.html">register</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="logout.html">logout</a>
-                    </li>
-                </ul>
             </div>
         </div>
-    </nav>
-</body>
+
+        <!-- Main Script -->
+        <script>
+            const MY_SERVER = 'http://localhost:5000';
+
+            showloans = async () => {
+                try {
+                    const accessToken = sessionStorage.getItem('jwtToken');
+                    const response = await axios.get(`${MY_SERVER}/show_loans`, {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
+                    const loans = response.data.loans;
+                    const loansTableBody = document.getElementById('loansTableBody');
+                    loansTableBody.innerHTML = '';
+
+                    loans.forEach(loan => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                    <td>${loan.customer_name}</td>
+                    <td>${loan.book_name}</td>
+                    <td>${loan.LoanDate}</td>}
+                    <td>${loan.ReturnDate}</td>}`;
+                        loansTableBody.appendChild(row);
+                    });
+                }   //more elaborate error for debugging 
+                catch (error) {
+                    console.error('Error fetching loans:', error.message);
+                }
+            }
+            showloans();
+        </script>
+        <script>
+            loanBook = async () => {
+                try {
+                    const bookName = document.getElementById('name')?.value;
+                    const customerName = document.getElementById('customer_name')?.value;
+                    const Loan_date = document.getElementById('LoanDate')?.value;
+
+                    // Get access token
+                    const accessToken = sessionStorage.getItem('jwtToken');
+                    if (!accessToken) {
+                        throw new Error('No access token found');
+                    }
+
+                    // Make API request
+                    const response = await axios.post(`${MY_SERVER}/loan_book`, {
+                        name: bookName,
+                        customer_name: customerName,
+                        LoanDate: Loan_date
+                    }, {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Access-Control-Allow-Origin': '*',
+                        }
+                    });
+
+                    // Handle response  
+                    if (response.status !== 200) {
+                        throw new Error('Error loaning book');
+                    }
+
+                    console.log('Book loaned successfully');
+                    return true;
+                    
+
+                }catch (error) {
+                    if (error.response) {
+                        // The request was made and the server responded with a status code
+                        // that falls out of the range of 2xx
+                        console.error('Error data:', error.response.data);
+                    } else if (error.request) {
+                        // The request was made but no response was received
+                        console.error('No response:', error.request);
+                    } else {
+                        // Something happened in setting up the request that triggered an Error
+                        console.error('Error message:', error.message);
+                    }
+                    return false;
+                }}
+        </script>
+        <script>
+            async function returnBook() {
+                const bookName = document.getElementById('name')?.value;
+                const customerName = document.getElementById('customer_name')?.value;
+                const Loan_Date = document.getElementById('LoanDate')?.value;
+
+                try {
+                    const accessToken = sessionStorage.getItem('jwtToken');
+
+                    // Add CORS headers to allow cross-origin request
+                    const headers = {
+                        'Authorization': `Bearer ${accessToken}`
+                    };
+
+                    await axios.post(`${MY_SERVER}/return_book`, {
+                        name: bookName,
+                        customerName: customerName,
+                        LoanDate: Loan_Date
+                    }, {
+                        headers: headers
+                    });
+
+                    // Clear form fields
+                    document.getElementById('bookName').value = '';
+                    document.getElementById('customer').value = '';
+                    document.getElementById('Loan_Date').value = '';
+
+                    // Fetch and display updated book list
+
+                } catch (error) {
+                    console.error('Error fetching books:', error.message);
+
+                    if (error.response) {
+                        // The request was made and the server responded with a status code
+                        // that falls out of the range of 2xx
+                        console.error(error.response.data);
+                        console.error(error.response.status);
+                        console.error(error.response.headers);
+
+                    } else if (error.request) {
+                        // The request was made but no response was received
+                        console.error(error.request);
+                    }
+                }
+            }
+
+            //returnBook();
+        </script>
+    </body>
 
 </html>

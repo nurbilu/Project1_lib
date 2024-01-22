@@ -5,16 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Management System</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <!-- Axios CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 
 <!-- Existing Head section remains the same -->
 
 <body>
-    <!-- Existing Navbar and other sections remain the same -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img width="40"
+                        src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
+                Library System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link active" href="home.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html">Book system</a></li>
+                    <li class="nav-item"><a class="nav-link" href="loans.html">Loans system</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="logout.html">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Bootstrap JS and its dependencies (jQuery and Popper) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <div class="container mt-4">
         <h2>Library Management System</h2>
@@ -22,154 +47,143 @@
         <!-- Show Books in Table Format -->
 
         <div>
-            <div id="searchBook",class="mb-3">
+            <div id="searchBook" class="mb-3">
                 <label for="book_name" class="form-label">Search Book By Name</label>
                 <input type="text" class="form-control" id="book_name" placeholder="Enter Book Name">
                 <button type="button" class="btn btn-primary" onclick="searchBook()">Search</button>
-                <!-- show search result -->
-                <div id="searchResult">
-                </div>
+                <!-- Show search result -->
+                <tbody id="searchResult">
+                    <!-- Search results will be displayed here -->
+                </tbody>
+            </div>
+        </div>
+        <div id="showBooks">
+            <h3>Show Books</h3>
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Author</th>
+                        <th>Year Published</th>
+                        <th>Type</th>
+                        <th>Picture</th>
+                    </tr>
+                </thead>
+                <tbody id="booksTableBody">
+                    <!-- Book rows will be added here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
 
-                <div id="showBooks">
-                    <h3>Show Books</h3>
-                    <table class="table mt-3">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Author</th>
-                                <th>Year Published</th>
-                                <th>Type</th>
-                                <th>Picture</th>
-                            </tr>
-                        </thead>
-                        <tbody id="booksTableBody">
-                            <!-- Book rows will be added here by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
 
+        <!-- Main Script -->
+        <script>
+            const MY_SERVER = 'http://localhost:5000';
 
-                <!-- Main Script -->
-                <script>
-                    const MY_SERVER = 'http://localhost:5000';
+            async function fetchBooks() {
+                try {
+                    const accessToken = sessionStorage.getItem('jwtToken');
+                    // console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
 
-                    async function fetchBooks() {
-                        try {
-                            const accessToken = sessionStorage.getItem('jwtToken');
-                            // console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
-
-                            if (!accessToken) {
-                                console.error('No JWT Token found');
-                                // Handle the scenario where the token is missing
-                                return;
-                            }
-
-                            const response = await axios.get(`${MY_SERVER}/show_books`, {
-                                headers: {
-                                    'Authorization': `Bearer ${accessToken}`
-                                }
-                            });
-
-                            const books = response.data.books;
-                            const booksTableBody = document.getElementById('booksTableBody');
-                            booksTableBody.innerHTML = '';
-
-                            books.forEach(book => {
-                                const row = document.createElement('tr');
-                                row.innerHTML = `<td>${book.name}</td>
-                    <td>${book.author}</td><td>${book.year_published}</td>
-                    <td>${book.type}</td><td>${book.picture}</td>`;
-                                booksTableBody.appendChild(row);
-                            });
-                        }   //more elaborate error for debugging 
-                        catch (error) {
-                            console.error('Error fetching books:', error.message);
-                            //if (error.response) {
-                            //    // The request was made and the server responded with a status code
-                            //    // that falls out of the range of 2xx
-                            //    console.error(error.response.data);
-                            //    console.error(error.response.status);
-                            //    console.error(error.response.headers);
-                            //} else if (error.request) {
-                            //    // The request was made but no response was received
-                            //    console.error(error.request);
-                            //} else {
-                            //    // Something happened in setting up the request that triggered an Error
-                            //    console.error('Error', error.message);
-                            //}
-                        }
-                    } fetchBooks();
-
-                    // Function to search book
-                    async function searchBook() {
-                        const accessToken = sessionStorage.getItem('jwtToken');
-                        const bookElement = document.getElementById('book_name');
-
-                        if (!bookElement) {
-                            console.error("Book input element not found");
-                            return;
-                        }
-
-                        const bookName = bookElement.value;
-
-                        try {
-                            const response = await axios.post(`${MY_SERVER}/search_book/`, {
-                                name: bookName
-                            }, {
-                                headers: { 'Authorization': `Bearer ${accessToken}` }
-                            });
-
-                            console.log(response.data);
-
-                        } catch (error) {
-                            console.error('Error searching books:', error.message);
-                        }
+                    if (!accessToken) {
+                        console.error('No JWT Token found');
+                        // Handle the scenario where the token is missing
+                        return;
                     }
-                    searchBook();
 
+                    const response = await axios.get(`${MY_SERVER}/show_books`, {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
 
+                    const books = response.data.books;
+                    const booksTableBody = document.getElementById('booksTableBody');
+                    booksTableBody.innerHTML = '';
 
+                    books.forEach(book => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${book.name}</td>
+                        <td>${book.author}</td><td>${book.year_published}</td>
+                        <td>${book.book_type}</td><td>${book.PIC_link}</td>`;
+                        booksTableBody.appendChild(row);
+                    });
+                }   //more elaborate error for debugging 
+                catch (error) {
+                    console.error('Error fetching books:', error.message);
+                    //if (error.response) {
+                    //    // The request was made and the server responded with a status code
+                    //    // that falls out of the range of 2xx
+                    //    console.error(error.response.data);
+                    //    console.error(error.response.status);
+                    //    console.error(error.response.headers);
+                    //} else if (error.request) {
+                    //    // The request was made but no response was received
+                    //    console.error(error.request);
+                    //} else {
+                    //    // Something happened in setting up the request that triggered an Error
+                    //    console.error('Error', error.message);
+                    //}
+                }
+            } fetchBooks();
 
+            //Function to search book
+            searchBook = async () => {
+                const accessToken = sessionStorage.getItem('jwtToken');
+                const bookElement = document.getElementById('book_name');
 
+                if (!bookElement) {
+                    console.error("Book input element not found");
+                    return;
+                }
 
+                const bookName = bookElement.value;
+                if (!bookName) {
+                    Toastify({
+                        text: "'Please enter a book name'",
+                        className: "info",
+                        style: {
+                            background: "linear-gradient(to right, #add8e6, #87cefa)"
+                
+                        }
+                
+                    }).showToast();
+                }
 
+                try {
+                    const response = await axios.post(`${MY_SERVER}/search_book/`, {
+                        name: bookName
+                    }, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
 
-                </script>
-                <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                    <div class="container-fluid">
-                        <a class="navbar-brand" href="#">Library System</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
-                            aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="collapse navbar-collapse" id="navbarNav">
-                            <img width="40"
-                                src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
-                            <ul class="navbar-nav">
-                                <li class="nav-item">
-                                    <a class="nav-link active" aria-current="page" href="home.html">Home</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link active" aria-current="page" href="index.html">Book system</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link active" aria-current="page" href="loans.html">Loans
-                                        system</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="login.html">login</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="register.html">register</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="logout.html">logout</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
+                    console.log(response.data);
+                    const searchResult = document.getElementById('searchResult').innerHTML = `
+                    <h3>Search Results:</h3>
+                    <p>Name: ${book_name}</p>
+                    <p>Author: ${book_name.author}</p>
+                    <p>Year Published: ${book_name.year_published}</p>
+                    <p>Type: ${book_name.book_type}</p>
+                    <img src="${book_name.PIC_link}" alt="Book.jpg" style="width:100px; height:auto;">`; // Update this to display the search results appropriately
+
+                } catch (error) {
+                    console.error('Error searching books:', error.message);
+                    if (error.response) {
+                        // Handle server response error details
+                        console.error('Response data:', error.response.data);
+                        console.error('Response status:', error.response.status);
+                    } else if (error.request) {
+                        // The request was made but no response was received
+                        console.error('Request error:', error.request);
+                    } else {
+                        // An error occurred in setting up the request
+                        console.error('Error', error.message);
+                    }
+                }
+            }
+
+        </script>
+
 </body>
 
 </html>
