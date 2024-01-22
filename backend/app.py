@@ -105,8 +105,8 @@ class Loans(db.Model):
 @app.route("/", methods=["GET"])
 def home():
     if request.method == "GET":
-        path = session.get("http://127.0.0.1:5000/frontend/home.html")
-    return send_from_directory(".", path)
+        path = ("http://127.0.0.1:5000/frontend/home.html")
+    return send_from_directory(path , "home.html")
 
 
 
@@ -243,9 +243,12 @@ def loan_book():
         book_name = data.get("name")
         customer_name = data.get("customer_name")
 
-        loanDate_str = data.get("LoanDate", str(date.today()))
-        year, month, day = map(int, loanDate_str.split('-'))
-        loanDate = date(year, month, day)
+        loanDate_str = data.get("LoanDate")
+        if loanDate_str:
+            year, month, day = map(int, loanDate_str.split('-'))
+            loanDate = date(year, month, day)
+        else:
+            loanDate = date.today()
 
         if not book_name or not customer_name:
             return jsonify({"message": "Invalid request. Please provide required fields."}), 400
@@ -286,8 +289,9 @@ def return_book():
     current_custID = get_jwt_identity()
     if request.method == 'POST':
         data = request.get_json()
-        name = data.get('name').join()
-        customer_name = data.get('customer_name').join()
+        book_name = data.get('name')
+        customer_name = data.get('customer_name')
+
         
         if not book_name or not customer_name:
             return jsonify({'message': 'Invalid request. Please provide both name and customer_name in the request.'}), 400
