@@ -10,6 +10,7 @@ colorama==0.4.6
 distlib==0.3.7
 docutils==0.20.1
 executing==2.0.1
+Faker==22.4.0
 filelock==3.12.4
 Flask==2.3.3
 Flask-Bcrypt==1.0.1
@@ -34,6 +35,7 @@ platformdirs==3.10.0
 Pygments==2.17.2
 PyJWT==2.8.0
 pypiwin32==223
+python-dateutil==2.8.2
 pytz==2023.3.post1
 pywin32==306
 requests==2.31.0

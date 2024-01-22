@@ -20,43 +20,37 @@
             <button class="btn btn-primary mr-2" onclick="customerTest()">Customer Test</button>
             <button class="btn btn-primary" onclick="loanTest()">Loan Test</button>
         </div>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <img width="40"
-            src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Library System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="home.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="index.html">Book system</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="loans.html">Loans system</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.html">login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="register.html">register</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="logout.html">logout</a>
-                    </li>
-                </ul>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <img width="40"
+                            src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
+                    Library System
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link active" href="home.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="index.html">Book system</a></li>
+                        <li class="nav-item"><a class="nav-link" href="loans.html">Loans system</a></li>
+                        <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
+                        <li class="nav-item"><a class="nav-link" href="logout.html">Logout</a></li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    
+        <!-- Bootstrap JS and its dependencies (jQuery and Popper) -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script>
         const MY_SERVER = "http://localhost:5000";
         // JavaScript functions to handle button clicks
-        function bookTest() {
+            bookTest = () => {
             // Replace 'your_jwt_token' with the actual JWT token
             const accessToken = sessionStorage.getItem('jwtToken');
 
@@ -71,7 +65,8 @@
                 .catch(function (error) {
                     console.log(error);
                 });
-            }
+}
+
         
 
         function customerTest() {
