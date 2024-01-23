@@ -8,9 +8,39 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f8f8dc;
+            color: #d2b48c;
+        }
+
+        .thead-light th {
+            background-color: #f8f8dc;
+        }
+
+        .btn-primary {
+            background-color: #d2b48c;
+            border-color: #d2b48c;
+        }
+
+        .table-container {
+            max-height: calc(5 * 50px); 
+            overflow-y: auto;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f8dc;
+        }        
+    </style>
 </head>
 
-<!-- Existing Head section remains the same -->
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -47,13 +77,35 @@
 
         <!-- Show Books in Table Format -->
 
-        <div>
-            <div id="searchBook" class="mb-3">
+    </div>
+    <div id="showBooks" , class="table-container">
+        <h3>Show Books</h3>
+
+            <table class="table table-hover thead-light">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Author</th>
+                        <th>Year Published</th>
+                        <th>Type</th>
+                        <!-- show the img instead of link -->
+                        <th>Picture<img id src=""></th>
+                    </tr>
+                </thead>
+                <tbody id="booksTableBody", style="height: [desired height]; overflow-y: scroll;">
+                    <!-- Book rows will be added here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+        <div class="container"> 
+            <div id="searchBook" class="form-group mb-3">
                 <label for="book_name" class="form-label">Search Book By Name</label>
                 <input type="text" class="form-control" id="book_name" placeholder="Enter Book Name">
                 <button type="button" class="btn btn-primary" onclick="searchBook()">Search</button>
                 <!-- Show search result -->
-                <div id="searchResult">
+                <div id="searchResult" class="mt-3">
                     <!-- Search results will be displayed here -->
                 </div>
             </div>
@@ -70,139 +122,103 @@
             <input type="date" class="form-control" id="Loan_date" placeholder="Enter Loan Date">
             <button type="button" class="btn btn-primary" onclick="loanBook()">Submit</button>
     </form>
-    </div>
-        <div id="showBooks">
-            <h3>Show Books</h3>
-            <table class="table mt-3">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Author</th>
-                        <th>Year Published</th>
-                        <th>Type</th>
-                        <!-- show the img instead of link -->
-                        <th>Picture<img id src=""></th>
-                    </tr>
-                </thead>
-                <tbody id="booksTableBody">
-                    <!-- Book rows will be added here by JavaScript -->
-                </tbody>
-            </table>
-        </div>
 
+    <!-- Main Script -->
+    <script>
+        const MY_SERVER = 'http://localhost:5000';
 
-        <!-- Main Script -->
-        <script>
-            const MY_SERVER = 'http://localhost:5000';
-
-            async function fetchBooks() {
-                try {
-                    const accessToken = sessionStorage.getItem('jwtToken');
-                    // console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
-
-                    if (!accessToken) {
-                        console.error('No JWT Token found');
-                        // Handle the scenario where the token is missing
-                        return;
-                    }
-
-                    const response = await axios.get(`${MY_SERVER}/show_books`, {
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    });
-
-                    const books = response.data.books;
-                    const booksTableBody = document.getElementById('booksTableBody');
-                    booksTableBody.innerHTML = '';
-
-                    books.forEach(book => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `<td>${book.name}</td>
-                        <td>${book.author}</td><td>${book.year_published}</td>
-                        <td>${book.book_type}</td><td><img src="${book_name.PIC_link}"></td>`;
-                        booksTableBody.appendChild(row);
-                    });
-                }   //more elaborate error for debugging 
-                catch (error) {
-                    console.error('Error fetching books:', error.message);
-                    //if (error.response) {
-                    //    // The request was made and the server responded with a status code
-                    //    // that falls out of the range of 2xx
-                    //    console.error(error.response.data);
-                    //    console.error(error.response.status);
-                    //    console.error(error.response.headers);
-                    //} else if (error.request) {
-                    //    // The request was made but no response was received
-                    //    console.error(error.request);
-                    //} else {
-                    //    // Something happened in setting up the request that triggered an Error
-                    //    console.error('Error', error.message);
-                    //}
-                }
-            } fetchBooks();
-        </script>
-        <script>
-            //Function to search book
-            searchBook = async () => {
+        async function fetchBooks() {
+            try {
                 const accessToken = sessionStorage.getItem('jwtToken');
-                const bookElement = document.getElementById('book_name');
+                // console.log('JWT Token:', accessToken); // Debugging: Log the JWT Token
 
-
-
-                if (!bookElement) {
-                    console.error("Book input element not found");
+                if (!accessToken) {
+                    console.error('No JWT Token found');
                     return;
                 }
 
-                const bookName = bookElement.value;
+                const response = await axios.get(`${MY_SERVER}/show_books`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
 
-                if (!bookName) {
-                    Toastify({
-                        text: "'Please enter a book name'",
-                        className: "info",
-                        style: {
-                            background: "linear-gradient(to right, #add8e6, #87cefa)"
+                const books = response.data.books;
+                const booksTableBody = document.getElementById('booksTableBody');
+                booksTableBody.innerHTML = '';
 
-                        }
+                books.forEach(book => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${book.name}</td>
+                        <td>${book.author}</td><td>${book.year_published}</td>
+                        <td>${book.book_type}</td><td><img width=100 src="https://clipart-library.com/images/6Tpo6G8TE.jpg"></td>`;
+                    booksTableBody.appendChild(row);
+                });
+            }   
+            catch (error) {
+                console.error('Error fetching books:', error.message);
+            }
+        } fetchBooks();
+    </script>
+    <script>
+        //Function to search book
+        searchBook = async () => {
+            const accessToken = sessionStorage.getItem('jwtToken');
+            const bookElement = document.getElementById('book_name');
 
-                    }).showToast();
-                }
 
-                try {
-                    const response = await axios.post(`${MY_SERVER}/search_book/`, {
-                        name: bookName,
-                    }, {
-                        headers: { 'Authorization': `Bearer ${accessToken}` }
-                    });
-                    
-                    const book = response.data.book;
-                    console.log(book);
-                    const searchResult = document.getElementById('searchResult').innerHTML = `
+
+            if (!bookElement) {
+                console.error("Book input element not found");
+                return;
+            }
+
+            const bookName = bookElement.value;
+
+            if (!bookName) {
+                Toastify({
+                    text: "'Please enter a book name'",
+                    className: "info",
+                    style: {
+                        background: "linear-gradient(to right, #add8e6, #87cefa)"
+
+                    }
+
+                }).showToast();
+            }
+
+            try {
+                const response = await axios.post(`${MY_SERVER}/search_book/`, {
+                    name: bookName,
+                }, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+
+                const book = response.data.book;
+                console.log(book);
+                const searchResult = document.getElementById('searchResult').innerHTML = `
                     <h3>Search Results:</h3>
                     <p>Name: ${bookName}</p>
                     <p>Author: ${book.author}</p>
                     <p>Year Published: ${book.year_published}</p>
-                    <p>Type: ${book.book_type}</p>`; 
-                
-                } catch (error) {
-                    console.error('Error searching books:', error.message);
-                    if (error.response) {
-                        // Handle server response error details
-                        console.error('Response data:', error.response.data);
-                        console.error('Response status:', error.response.status);
-                    } else if (error.request) {
-                        // The request was made but no response was received
-                        console.error('Request error:', error.request);
-                    } else {
-                        // An error occurred in setting up the request
-                        console.error('Error', error.message);
-                    }
-                }
-            }
+                    <p>Type: ${book.book_type}</p>`;
 
-        </script>
-        <script>
+            } catch (error) {
+                //console.error('Error searching books:', error.message);
+                Toastify({
+                    text: 'Error searching books!',
+                    className: "error",
+                    style: {
+                        background: "linear-gradient(to right, red, red)",
+                        color: "white",
+                        textAlign: "center"
+                    }
+                }).showToast();
+            }
+        }
+
+    </script>
+    <script>
         loanBook = async () => {
             try {
                 const bookName = document.getElementById('name')?.value;
@@ -230,11 +246,32 @@
                 }
 
                 console.log('Book loaned successfully');
-                return true;
+                Toastify({
+                    text: "Book loaned successfully",
+                    className: "success",
+                    style: {
+                        background: "linear-gradient(to right, green, green)",
+                        color: "white",
+                        textAlign: "center"
 
+                    }
+
+                }).showToast();
+                return true;
 
             } catch (error) {
                 console.error(error);
+                Toastify({
+                    text: "Error loaning book! ",
+                    className: "error",
+                    style: {
+                        background: "linear-gradient(to right, red, red)",
+                        color: "white",
+                        textAlign: "center"
+
+                    }
+
+                }).showToast();
                 return false;
             }
         }

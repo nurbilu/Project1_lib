@@ -16,12 +16,12 @@ import random
 import re
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend')
 api = Api(app)
 CORS(app)
 app.secret_key = 'secret_secret_key'
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:MYSQLnur1996##@localhost/library' # change this to your own mysql database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/library' # change this to your own mysql database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
 db = SQLAlchemy(app)
@@ -59,13 +59,13 @@ class Books(db.Model):
     author = db.Column(db.Text)
     year_published = db.Column(db.Integer, nullable=False)
     book_type = db.Column(db.Enum('Up to 10 days' , 'Up to 5 days', 'Up to 2 days') )
-    PIC_link = db.Column(db.String(500))
+    PIC_link = db.Column(db.String(1500))
     def __init__(self, name, author, year_published, book_type, PIC_link):
         self.name = name
         self.author = author
         self.year_published = year_published
         self.book_type = book_type
-        self.PIC_link = PIC_link if PIC_link else 'default.jpg'
+        self.PIC_link = PIC_link if PIC_link else 'https://clipart-library.com/images/6Tpo6G8TE.jpg'
 
     
 class Customers(db.Model):
@@ -97,16 +97,15 @@ class Loans(db.Model):
 # set routes
 # test route
 
+@app.route("/")
+def test():
+    return "test is on"
+
+# # wanted to use this to display the home page and it worked , but i lack time (LOL)
+# # and i started to have problems with CORS 
 # @app.route("/")
-# def test():
-#     return "test is on"
-
-
-@app.route("/", methods=["GET"])
-def home():
-    if request.method == "GET":
-        path = ("http://127.0.0.1:5000/frontend/home.html")
-    return send_from_directory(path , "home.html")
+# def home():
+#     return send_from_directory(app.static_folder, 'home.html')
 
 
 
@@ -184,7 +183,7 @@ def show_customers():
 
         return jsonify({'customers': customer_list})
 
-# add new customer to table customers
+# # add new customer to table customers
 # @app.route("/add_customer", methods=['POST'])
 # @jwt_required()
 # def add_customer():
@@ -292,13 +291,14 @@ def return_book():
         book_name = data.get('name')
         customer_name = data.get('customer_name')
 
-        
         if not book_name or not customer_name:
             return jsonify({'message': 'Invalid request. Please provide both name and customer_name in the request.'}), 400
-        book = Books.query.filter_by(name=book_name).fetch_customer_book_list()
-        customer = Customers.query.filter_by(name=customer_name).fetch_customer_book_list()
 
-        if not book_name or not customer:
+        # Use .first() to fetch the first result
+        book = Books.query.filter_by(name=book_name).first()
+        customer = Customers.query.filter_by(name=customer_name).first()
+
+        if not book or not customer:
             return jsonify({'message': 'Book or customer not found.'}), 404
 
         loan = Loans.query.filter_by(bookID=book.bookID, custID=customer.custID).first()
@@ -391,7 +391,7 @@ def display_late_loans():
 
     return jsonify({'late_loans': late_loan_list})
 
-# unit test - create a test books - make 3 random books and add them to the db 1st
+# unit test - create a test books - make 5 b
 
 @app.route("/book_test", methods=["POST"])
 @jwt_required()
@@ -404,35 +404,35 @@ def book_test():
                 "author": "Miguel de Cervantes",
                 "year_published": 1605, 
                 "book_type": "Up to 10 days",
-                "PIC_link": "https://example.com/donquixote.jpg",
+                "PIC_link": "https://clipart-library.com/images/6Tpo6G8TE.jpg",
             },
             {
                 "name": "One Hundred Years of Solitude",
                 "author": "Gabriel García Márquez",
                 "year_published": 1967,
                 "book_type": "Up to 5 days",
-                "PIC_link": "https://example.com/solitude.jpg",
+                "PIC_link": "https://clipart-library.com/images/6Tpo6G8TE.jpg",
             },
             {
                 "name": "The Little Prince",
                 "author": "Antoine de Saint-Exupéry",
                 "year_published": 1943,
                 "book_type": "Up to 10 days",
-                "PIC_link": "https://example.com/thelittleprince.jpg",
+                "PIC_link": "https://clipart-library.com/images/6Tpo6G8TE.jpg",
             },
             {
                 "name": "The Diary of Anne Frank",
                 "author": "Anne Frank",
                 "year_published": 1947,
                 "book_type": "Up to 10 days",
-                "PIC_link": "https://example.com/annefrank.jpg",
+                "PIC_link": "https://clipart-library.com/images/6Tpo6G8TE.jpg",
             },
             {
                 "name": "The Adventures of Huckleberry Finn",
                 "author": "Mark Twain",
                 "year_published": 1884,
                 "book_type": "Up to 5 days",
-                "PIC_link": "https://example.com/huckleberryfinn.jpg",
+                "PIC_link": "https://clipart-library.com/images/6Tpo6G8TE.jpg",
             },
         ]
 
@@ -450,44 +450,6 @@ def book_test():
         return jsonify({"message": "Books added successfully"})
 
     return jsonify({"msg": "Invalid request method"}), 405
-
-# unit test - create a test books - make 3 random books and add them to the db 2nd
-
-# fake = Faker()
-
-# @app.route("/book_test", methods=["POST"])
-# @jwt_required()
-# def book_test():
-#     current_custID = get_jwt_identity()
-
-#     if request.method == "POST":
-#         books_to_add = []
-        
-#         for _ in range(3):  # Generate 3 random books
-#             book_data = {
-#                 "name": fake.catch_phrase(),  # Random book name
-#                 "author": fake.name(),  # Random author name
-#                 "year_published": random.randint(1800, 2021),  # Random publication year
-#                 "book_type": random.choice(["Up to 10 days", "Up to 5 days", "Up to 2 days"]),  # Random book type
-#                 "PIC_link": fake.image_url()  # Random image URL
-#             }
-#             books_to_add.append(book_data)
-
-#         for book_data in books_to_add:
-#             book = Books(
-#                 name=book_data["name"],
-#                 author=book_data["author"],
-#                 year_published=book_data["year_published"],
-#                 book_type=book_data["book_type"],
-#                 PIC_link=book_data["PIC_link"],
-#             )
-#             db.session.add(book)
-
-#         db.session.commit()
-#         return jsonify({"message": "Books added successfully"})
-
-#     return jsonify({"msg": "Invalid request method"}), 405
-
 
 # unit test - create a test customer
 @app.route("/customer_test", methods=['POST'])
@@ -589,15 +551,13 @@ def login():
 @app.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
-    # Extract the token's identifier (jti)
     jti = get_jwt()["jti"]
     
     try:
-        # Add the token identifier to the invalidated tokens list
         invalidated_tokens.add(jti)
-        session.clear()  # Clear the session
+        session.clear() 
         return jsonify({"message": "Logout successful"}), 200
-    except Exception as e:  # Catch any unexpected errors
+    except Exception as e: 
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
 

@@ -5,14 +5,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Management System</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <!-- Axios CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f8f8dc;
+            color: #d2b48c;
+        }
+
+        .thead-light th {
+            background-color: #f8f8dc;
+        }
+
+        .btn-primary {
+            background-color: #d2b48c;
+            border-color: #d2b48c;
+        }
+
+        .table-container {
+            max-height: calc(5 * 50px);
+            overflow-y: auto;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f8dc;
+        }
+        
+    </style>
 </head>
 
 <body>
-    <!-- Existing Head section remains the same -->
 
     <body>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -48,10 +78,10 @@
             <h2>Library Management System</h2>
 
             <!-- Show Books in Table Format -->
-            <div id="showLoans">
+            <div id="showLoans" class="table-container">
                 <h3>Show Loans</h3>
 
-                <table class="table mt-3">
+                <table class="table table-hover thead-light">
                     <thead>
                         <tr>
                             <th>customer</th>
@@ -65,141 +95,106 @@
                     </tbody>
                 </table>
             </div>
-        <div>
-            <div class="mb-4">
-                <h3>Return Book</h3>
-                <label for="name" class="form-label">Book Name</label>
-                <input type="text" class="form-control" id="name" placeholder="Enter Book Name">
-                <label for="customer_name" class="form-label">Customer Name</label>
-                <input type="text" class="form-control" id="customer_name" placeholder="Enter Customer Name">
-                <label for="ReturnDate" class="form-label">ReturnDate</label>
-                <input type="date" class="form-control" id="ReturnDate" placeholder="Enter Return Date">
-                <button type="button" class="btn btn-primary" onclick="returnBook()">Submit</button>
-            </div>
-        </div>
-        <!-- Main Script -->
-        <script>
-            const MY_SERVER = 'http://localhost:5000';
+            <div>
+                <div class="mb-4">
+                    <h3>Return Book</h3>
+                    <label for="name" class="form-label">Book Name</label>
+                    <input type="text" class="form-control" id="name" placeholder="Enter Book Name">
+                    <label for="customer_name" class="form-label">Customer Name</label>
+                    <input type="text" class="form-control" id="customer_name" placeholder="Enter Customer Name">
+                    <label for="ReturnDate" class="form-label">ReturnDate</label>
+                    <input type="date" class="form-control" id="ReturnDate" placeholder="Enter Return Date">
+                    <button type="button" class="btn btn-primary" onclick="returnBook()">Submit</button>
+                </div>
+                <div class="mb-4">
+                    <div id="return_book">
+                        <!-- show book name when return book -->
+                    </div>
+                </div>
+                <!-- Main Script -->
+                <script>
+                    const MY_SERVER = 'http://localhost:5000';
 
-            showloans = async () => {
-                try {
-                    const accessToken = sessionStorage.getItem('jwtToken');
-                    const response = await axios.get(`${MY_SERVER}/show_loans`, {
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    });
-                    const loans = response.data.loans;
-                    const loansTableBody = document.getElementById('loansTableBody');
-                    loansTableBody.innerHTML = '';
+                    showloans = async () => {
+                        try {
+                            const accessToken = sessionStorage.getItem('jwtToken');
+                            const response = await axios.get(`${MY_SERVER}/show_loans`, {
+                                headers: {
+                                    'Authorization': `Bearer ${accessToken}`
+                                }
+                            });
+                            const loans = response.data.loans;
+                            const loansTableBody = document.getElementById('loansTableBody');
+                            loansTableBody.innerHTML = '';
 
-                    loans.forEach(loan => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
+                            loans.forEach(loan => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
                     <td>${loan.customer_name}</td>
                     <td>${loan.book_name}</td>
-                    <td>${loan.LoanDate}</td>}
-                    <td>${loan.ReturnDate}</td>}`;
-                        loansTableBody.appendChild(row);
-                    });
-                }   //more elaborate error for debugging 
-                catch (error) {
-                    console.error('Error fetching loans:', error.message);
-                }
-            }
-            showloans();
-        </script>
-        <script>
-            loanBook = async () => {
-                try {
-                    const bookName = document.getElementById('name')?.value;
-                    const customerName = document.getElementById('customer_name')?.value;
-                    const Loan_date = document.getElementById('LoanDate')?.value;
-
-                    const accessToken = sessionStorage.getItem('jwtToken');
-                    if (!accessToken) {
-                        throw new Error('No access token found');
-                    }
-
-                    const response = await axios.post(`${MY_SERVER}/loan_book`, {
-                        name: bookName,
-                        customer_name: customerName,
-                        LoanDate: Loan_date
-                    }, {
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Access-Control-Allow-Origin': '*',
+                    <td>${loan.LoanDate}</td>
+                    <td>${loan.ReturnDate}</td>`;
+                                loansTableBody.appendChild(row);
+                            });
+                        }   //more elaborate error for debugging 
+                        catch (error) {
+                            console.error('Error fetching loans:', error.message);
                         }
-                    });
+                    }
+                    showloans();
+                </script>
+                <script>
+                    returnBook = async () => {
+                        const bookNameElement = document.getElementById('name');
+                        const customerNameElement = document.getElementById('customer_name');
+                        const returnDateElement = document.getElementById('ReturnDate');
 
-                    if (response.status !== 200) {
-                        throw new Error('Error loaning book');
+                        const bookName = bookNameElement?.value;
+                        const customerName = customerNameElement?.value;
+                        const returnDate = returnDateElement?.value;
+
+                        try {
+                            const accessToken = sessionStorage.getItem('jwtToken');
+                            const headers = {
+                                'Authorization': `Bearer ${accessToken}`,
+                                'Content-Type': 'application/json'
+                            };
+                            const response = await axios.post(`${MY_SERVER}/return_book`, {
+                                name: bookName,
+                                customer_name: customerName,
+                                ReturnDate: returnDate
+                            }, { headers });
+                            console.log(response);
+                            //  display return book in html div id="return_book"
+                            Toastify({
+                                text: "return book successfully",
+                                className: "success",
+                                style: {
+                                    background: "linear-gradient(to right, green, green)",
+                                    color: "white",
+                                    textAlign: "center"
+
+                                }
+
+                            }).showToast();
+
+                        } catch (error) {
+                            console.error('Error fetching books:', error.message);
+                            Toastify({
+                                text: "return book failed",
+                                className: "error",
+                                style: {
+                                    background: "linear-gradient(to right, red, red)",
+                                    color: "white",
+                                    textAlign: "center"
+                                }
+                            }).showToast();
+                        }
                     }
 
-                    console.log('Book loaned successfully');
-                    return true;
 
 
-                } catch (error) {
-                    console.error(error);
-                    return false;
-                }
-            }
-        </script>
-        <script>
-            returnBook = async () => {
-                const bookNameElement = document.getElementById('name');
-                const customerNameElement = document.getElementById('customer_name');
-                const returnDateElement = document.getElementById('ReturnDate');
-            
-                console.log('Book Name Element:', bookNameElement);
-                console.log('Customer Name Element:', customerNameElement);
-                console.log('Return Date Element:', returnDateElement);
-            
-                const bookName = bookNameElement?.value;
-                const customerName = customerNameElement?.value;
-                const returnDate = returnDateElement?.value;
-            
-                console.log('Book Name:', bookName);
-                console.log('Customer Name:', customerName);
-                console.log('Return Date:', returnDate);
-                
-                document.getElementById('name').addEventListener('change', (event) => {
-                    console.log('Book Name Changed:', event.target.value);
-                });
-                document.getElementById('customer_name').addEventListener('change'), (event) => {
-                    console.log('Customer Name Changed:', event.target.value);}
-
-                try {
-                    const Content_Type = 'application/json';
-                    const accessToken = sessionStorage.getItem('jwtToken');
-                    const headers = {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': `application/json ${Content_Type}`
-                    };
-                    const response = await axios.post(`${MY_SERVER}/return_book`, {
-                        name: bookName,
-                        customer_name: customerName,
-                        ReturnDate: returnDate
-                    }, { headers });
-
-                    // Fetch and display updated book list
-                } catch (error) {
-                    console.error('Error fetching books:', error.message);
-                    if (error.response) {
-                        console.error(error.response.data);
-                        console.error(error.response.status);
-                        console.error(error.response.headers);
-
-                    } else if (error.request) {
-                        console.error(error.request);
-                    }
-                }
-            }
-
-
-
-        </script>
+                </script>
     </body>
 
 </html>

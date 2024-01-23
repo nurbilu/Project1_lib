@@ -8,6 +8,27 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f8f8dc;
+            color: #d2b48c;
+        }
+
+        .thead-light th {
+            background-color: #f8f8dc;
+        }
+
+        .btn-primary {
+            background-color: #d2b48c;
+            border-color: #d2b48c;
+        }
+    </style>
 </head>
 
 <body>
@@ -39,17 +60,29 @@
                 const jwtToken = response.data.token;  // Adjust according to your backend response
                 sessionStorage.setItem('jwtToken', jwtToken);
 
-                console.log('Login successful:', response.data , jwtToken);
+                //console.log('Login successful:', response.data , jwtToken);
+                Toastify({
+                    text: "customer login successful",
+                    className: "info",
+                    style: {
+                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        color: "white",
+                        textAlign: "center"
+                    }
+                }).showToast();
+
             } catch (error) {
-                console.error('Error during login:', error.response ? error.response.data.message : error.message);
+                //console.error('Error during login:', error.response ? error.response.data.message : error.message);
+                Toastify({
+                    text: "customer login failed",
+                    className: "error",
+                    style: {
+                        background: "linear-gradient(to right, #FF0000, #FF6666)",
+                        color: "white",
+                        textAlign: "center"
+                    }
+                }).showToast();
             }
-            Toastify({
-                text: "customer login successful",
-                className: "info",
-                style: {
-                    background: "linear-gradient(to right, #00b09b, #96c93d)",
-                }
-            }).showToast();
         }
     </script>
 
