@@ -21,7 +21,7 @@ api = Api(app)
 CORS(app)
 app.secret_key = 'secret_secret_key'
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/library' # change this to your own mysql database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:MYSQLnur1996##@localhost/library' # change this to your own mysql database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
 db = SQLAlchemy(app)
@@ -35,7 +35,6 @@ def check_if_token_in_blocklist(jwt_header, jwt_payload):
     jti = jwt_payload["jti"]
     return jti in invalidated_tokens
 
-# Define the authentication_successful function here
 def authentication_successful(name, password):
     global customer
     customer = Customers.query.filter_by(name=name).first()
@@ -101,8 +100,7 @@ class Loans(db.Model):
 def test():
     return "test is on"
 
-# # wanted to use this to display the home page and it worked , but i lack time (LOL)
-# # and i started to have problems with CORS 
+
 # @app.route("/")
 # def home():
 #     return send_from_directory(app.static_folder, 'home.html')
@@ -111,7 +109,6 @@ def test():
 
 
 
-# display all books
 @app.route("/show_books", methods=['GET'])
 @jwt_required()
 def show_books():
@@ -133,7 +130,6 @@ def show_books():
 
         return jsonify({'books': book_list})
 
-# add new book to table books
 @app.route('/add_book', methods=['POST'])
 @jwt_required()
 def add_book():
@@ -145,15 +141,11 @@ def add_book():
         book_type = data.get('book_type')
         PIC_link = data.get('PIC_link')
 
-    # Validate book_type
         if book_type not in ['Up to 10 days', 'Up to 5 days', 'Up to 2 days']:
             return "Invalid book_type", 400
 
-    # Create a new Books instance
         new_book = Books(name=name, author=author, year_published=int(year_published),book_type=book_type, PIC_link=PIC_link)
 
-
-    # Add to the session and commit
         try:
             db.session.add(new_book)
             db.session.commit()
@@ -165,7 +157,7 @@ def add_book():
     
     
 
-# show all customers 
+
 @app.route("/show_customers", methods=['GET'])
 @jwt_required()
 def show_customers():
@@ -183,7 +175,7 @@ def show_customers():
 
         return jsonify({'customers': customer_list})
 
-# # add new customer to table customers
+
 # @app.route("/add_customer", methods=['POST'])
 # @jwt_required()
 # def add_customer():
@@ -200,7 +192,7 @@ def show_customers():
 #         db.session.commit()
 #         return jsonify({'message': 'Customer added successfully'})
  
-# show all loans
+
 @app.route("/show_loans", methods=["GET"])
 @jwt_required()
 def show_loans():
@@ -232,7 +224,7 @@ def fetch_customer_book_list():
                     .all()
     return result
 
-# add new loan to table loans
+
 @app.route("/loan_book", methods=["POST"])
 @jwt_required()
 def loan_book():
@@ -281,7 +273,7 @@ def loan_book():
 
 
 
-# return book and delete loan from db 
+
 @app.route("/return_book", methods=['POST'])
 @jwt_required()
 def return_book():
@@ -524,8 +516,6 @@ def register():
 
         return jsonify({'message': 'Customer registered successfully'})
 
-# login costumer 
-# if user didnt login -  can not access other routes/pages rather than register 
 @app.route("/login", methods=['POST'])
 def login():
     if request.method == 'POST':
@@ -546,8 +536,7 @@ def login():
 
 
 
-# logout costumer
-# fix logout so it blocks connction to the other endpoints 
+
 @app.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
@@ -567,19 +556,16 @@ def get_customer_book_list():
                     .join(Loans, Customers.custID == Loans.custID)\
                     .join(Books, Loans.bookID == Books.bookID)\
                     .all()
-
-    # Format the result as desired, e.g., return a JSON response
     return jsonify([{"customer": customer_name, "book": name} for customer_name, book_name in result])
 
 
-# gereate a token for the costumer as user fo library 
 def generate_token(custID):
     expiration_time = datetime.timedelta(minutes=20)
     token = create_access_token(identity=custID, expires_delta=expiration_time)
     return token
 
-# entry point of the app 
+
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  # Create the database tables before running the app
+        db.create_all()  
     app.run(debug=True, port=5000)
