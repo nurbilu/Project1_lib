@@ -5,7 +5,7 @@ from flask_jwt_extended import JWTManager, jwt_required, create_access_token, ge
 import sqlite3
 from flask_cors import CORS ,cross_origin
 from datetime import date  , timedelta
-from sqlalchemy import Enum
+from sqlalchemy import Enum , and_ , or_
 from sqlalchemy.orm import class_mapper , joinedload
 from werkzeug.utils import secure_filename
 import jwt
@@ -51,7 +51,6 @@ def authentication_successful(name, password):
 #     if not is_token_valid(token):
 #         return jsonify({'message': 'Token is invalidated'}), 401
 
-# set models 
 class Books(db.Model):
     bookID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
@@ -198,7 +197,7 @@ def show_customers():
 def show_loans():
     current_custID = get_jwt_identity()
     if request.method == "GET":
-        loans = Loans.query.all()
+        loans = Loans.query.filter_by(custID=current_custID).all()
         loan_list = []
         for loan in loans:
             customer = Customers.query.filter_by(custID=loan.custID).first()
@@ -217,6 +216,7 @@ def show_loans():
 
 
 
+
 def fetch_customer_book_list():
     result = db.session.query(Customers.name, Books.name)\
                     .join(Loans, Customers.custID == Loans.custID)\
@@ -232,8 +232,6 @@ def loan_book():
     if request.method == "POST":
         data = request.get_json()
         book_name = data.get("name")
-        customer_name = data.get("customer_name")
-
         loanDate_str = data.get("LoanDate")
         if loanDate_str:
             year, month, day = map(int, loanDate_str.split('-'))
@@ -241,25 +239,25 @@ def loan_book():
         else:
             loanDate = date.today()
 
-        if not book_name or not customer_name:
-            return jsonify({"message": "Invalid request. Please provide required fields."}), 400
+        if not book_name:
+            return jsonify({"message": "Invalid request. Please provide the book name."}), 400
 
         book = Books.query.filter_by(name=book_name).first()
-        customer = Customers.query.filter_by(name=customer_name).first()
+        if not book:
+            return jsonify({"message": "Book not found."}), 404
 
-        if not book or not customer:
-            return jsonify({"message": "Book or customer not found."}), 404
-        
+        customer = Customers.query.filter_by(custID=current_custID).first()
+        if not customer:
+            return jsonify({"message": "Customer not found."}), 404
+
         loan_duration = re.findall(r'\d+', book.book_type)
         if loan_duration:
             days_to_add = int(loan_duration[0])
         else:
             return jsonify({'message': 'Invalid book type.'}), 400
 
-
-        
         return_date = loanDate + timedelta(days=days_to_add)
-        
+
         new_loan = Loans(
             custID=customer.custID,
             bookID=book.bookID,
@@ -268,10 +266,8 @@ def loan_book():
         )
         db.session.add(new_loan)
         db.session.commit()
+
         return jsonify({"message": "Book loaned successfully"})
-
-
-
 
 
 @app.route("/return_book", methods=['POST'])
@@ -281,27 +277,22 @@ def return_book():
     if request.method == 'POST':
         data = request.get_json()
         book_name = data.get('name')
-        customer_name = data.get('customer_name')
 
-        if not book_name or not customer_name:
-            return jsonify({'message': 'Invalid request. Please provide both name and customer_name in the request.'}), 400
+        if not book_name:
+            return jsonify({'message': 'Invalid request. Please provide the book name in the request.'}), 400
 
-        # Use .first() to fetch the first result
         book = Books.query.filter_by(name=book_name).first()
-        customer = Customers.query.filter_by(name=customer_name).first()
+        if not book:
+            return jsonify({'message': 'Book not found.'}), 404
 
-        if not book or not customer:
-            return jsonify({'message': 'Book or customer not found.'}), 404
-
-        loan = Loans.query.filter_by(bookID=book.bookID, custID=customer.custID).first()
-
+        loan = Loans.query.filter_by(bookID=book.bookID, custID=current_custID).first()
         if not loan:
-            return jsonify({'message': 'Loan not found.'}), 404
+            return jsonify({'message': 'No active loan found for this book and user.'}), 404
 
         return_date = data.get('ReturnDate')
-
         if return_date:
-            loan.ReturnDate = return_date
+            year, month, day = map(int, return_date.split('-'))
+            loan.ReturnDate = date(year, month, day)
             db.session.commit()
             
             db.session.delete(loan)
@@ -311,7 +302,8 @@ def return_book():
         else:
             return jsonify({'message': 'Invalid request. Please provide ReturnDate in the request.'}), 400
 
-# search book by name
+
+
 #error: NameError: name 'name' is not defined #
 @app.route("/search_book/", methods=['POST'])
 @jwt_required()
@@ -362,28 +354,36 @@ def search_customer():
             return jsonify({'message': 'Customer not found'})
 
     
-# display late loans
 @app.route("/display_late_loans", methods=['GET'])
 @jwt_required()
 def display_late_loans():
     current_custID = get_jwt_identity()
     today = date.today()
-    late_loans = Loans.query.filter(Loans.ReturnDate < today).all()
-    late_loan_list = []
 
-    for loan in late_loans:
+    late_loans = db.session.query(Loans, Books).join(Books, Loans.bookID == Books.bookID) \
+        .filter(Loans.custID == current_custID, Loans.ReturnDate < today).all()
+
+    late_loan_list = []
+    for loan, book in late_loans:
         late_loan_data = {
             'id': loan.loanID,
             'custID': loan.custID,
-            'bookID': loan.bookID,
-            'LoanDate': loan.LoanDate,
-            'ReturnDate': loan.ReturnDate
+            'bookID': book.bookID,
+            'bookName': book.name,
+            'LoanDate': loan.LoanDate.strftime('%Y-%m-%d'),
+            'ReturnDate': loan.ReturnDate.strftime('%Y-%m-%d'),
+            'BookType': book.book_type
         }
         late_loan_list.append(late_loan_data)
-
     return jsonify({'late_loans': late_loan_list})
 
-# unit test - create a test books - make 5 b
+def get_loan_duration_days(book_type):
+    duration_mapping = {
+        'Up to 10 days': 10,
+        'Up to 5 days': 5,
+        'Up to 2 days': 2
+    }
+    return duration_mapping.get(book_type, 0)
 
 @app.route("/book_test", methods=["POST"])
 @jwt_required()
@@ -556,7 +556,7 @@ def get_customer_book_list():
                     .join(Loans, Customers.custID == Loans.custID)\
                     .join(Books, Loans.bookID == Books.bookID)\
                     .all()
-    return jsonify([{"customer": customer_name, "book": name} for customer_name, book_name in result])
+    return jsonify([{"customer": customer_name, "book": book_name} for customer_name, book_name in result])
 
 
 def generate_token(custID):

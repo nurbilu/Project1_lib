@@ -30,14 +30,15 @@
         }
 
         .table-container {
-            max-height: calc(5 * 50px); 
+            max-height: calc(5 * 50px);
             overflow-y: auto;
         }
+
         thead th {
             position: sticky;
             top: 0;
             background-color: #f8f8dc;
-        }        
+        }
     </style>
 </head>
 
@@ -47,7 +48,7 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img width="40"
-                    src="https://files.oaiusercontent.com/file-XFffcRmROU4u4fCtj8gjNUtQ?se=2024-01-16T18%3A45%3A41Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dcbdd10aa-49e1-45d5-b88b-eec85ca6a78c.webp&sig=EjYltO7EQZpAtPghohdH%2BSjfG8riQlxCNX%2BbtGrOekw%3D">
+                    src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBhUIBwgWFhUVGCEaGRgYFx0eHxcYHR0jIhcgGhsaKygqGB8lHR0fITUrKTUrLi4wHR82OTktNygtLisBCgoKDQYHDgcHGisZExkrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrK//AABEIAMIBAwMBIgACEQEDEQH/xAAbAAEBAAMBAQEAAAAAAAAAAAAABQMEBgcBAv/EAEsQAQACAQIDAwYICAkNAAAAAAABAgMEEQUSIQZRcRMxQWGRsiIyQ3KBobHBFSMzNUJTYrQUFoKSosLR0uEkJSZERlJUY3ODo6Sz/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/APcQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATs2fXaq3Lw2tK1/W33n+bSJjm8ZmPpBREuOEXyTvrOJ57+qLxjj6PJRWfbMsleC6GPPjtPjkyT9sgoDVrw/T0+JFo8L2/tZIw2p8TNbwnr9vX6wZhrZtRlxz5KmKLXmJmOu0dNo6z6PP6N0u3A9ZrMvleJ8Zzbfq8NvJUj+VX4dvHePAF0Sadm+FV+Pgtf8A6mXJf37TuyU4Bwmn5PQUjwjb7AUhpU4Zp8UfiLXr4ZLbeyZmPqfnXaq3C9HbVai/PSvWenwojfrPwek7R122jzA3x8raLV5qzvE+aX0AAAAAAAAAAAAAAAAAAAAErjmbPfk4fpN4tmna14+Txx8ed/8AeneK19c7+iWbge34Jx7R6PvSeAY8NcmTPSkc19Tmi1tutuXLMV3n07R0juhU7PTvwXHPq++QUQAAAT8s/wCfscb/ACOT3sagl5LT/Gald+nkL+/jVAAAGhxueXQ7/t09+G+nce/Ns/Pp79Qa3CtZptFq44FteJrEzjmazyzTzxSto6b0iYjaeu0b9esrTk9db/S7SW78l49uC/8AcdYAAAAAAAAAAAAAAAAAAAADmODzFKWmP+Jz/vEqnZv8yYvCftlH4b1w2iZ/1nP+8rHZmd+B4uvon7ZBTAAABI1Ftu1WKO/Dk96n9iui623L2q08d+PJ9y0AAAndofzTaYnzTWfZesqKd2inbgmW3dXf2TuDnNdk37Q6C0R8vH16fVf3XaOGyzz63RZu7Njn211Nf67uQAAAAAAAAAAAAAAAAAAAAcloL7eefl8/70sdl5ieBY9vX70oemt+M5e/Nn/ev8Fvsr04JSPXb3pBWAAABD4lO3arS/Ny+7C4hcViY7VaOY7ssf0YXQAAEztNPL2d1Fu7FafZEqaV2q3/AIsanl/UZPckHK6rJHk9Nfb5bDP/AJ9vR8937zbimTk4Viy47fFvp5/9nBv9v1vSQAAAAAAAAAAAAAAAAAAAAcLhz0rr6VteI/G6mforq43+5R0luOfgnHj4Rp8dImOacmbfpE9fg469Znx2cvxbU6XSZq5ddrMOOkZNXWZv8K9ptqpmKUxV3teJ5Ou3SdtvT0266/inFZ/yPgGr1ET+nqb/AMGxT4YvPMeMAr6jDrcePfifazJWfTFMeHDX6JyxM/W/Fc2KfyHaPNP/AHcFvsfdDwjtJSIth0/D9NM+fkxWvPt3ruoRwntHev43tNET+xpqR782Bg0+ozTO2Pj8z4+Rn6o6qmDJr4jrnpbxpNZn6Yn7k3NwHj+T/aqZjutpcM/ZEFeH8f0UzbHkw5en6MTgtM+v8pS0fyY8Qa3G+0GHRcf02PWaa/lIjJNKU+F5aZiIiuOenXeY335Yjzz06t3Nq+0N53tGnwR59trZrbenfrjrWdu7miPWm6jhXanWaqms8rSk4t5is5KWm/NXaYrkjBHke/fa+/m2jzsv4E49xLBFeJXwUnmmZ5rW1EcvzeXDTf12i+3d3B+bcQz2yTSe0V5tHnrhphtMT83kvMe1s6fJqr+fimsj1zp67f8AxK9ja5aRTX8c1eSI/RjJGKnhyYIpGzJXsL2frbmnS5JnvnPm39vMDPizailevF+v/NxRXf6NsbY1+PWarhOXT2rS/PjtXek7b81Zj4s7x/SakdkdFjtzaTXavHP7OqzTH829rRPsYvwHxrRfD4dx3yk778uoxUnf1c+GMcx4zzeEg5LPaM3BqVneJrWnPWek1tjzaaLxMd8WiYnumJepPMuO3y6b+EarjGmtp73xxG23NiyZIvjmbUy19Nq0pXltFJnljaPPL00AAAAAAAAAAAAAAAAAAAAE/TcD4TpeIX4hpuHYq5ck72yRSOa0+ne3n6qAAAAAAAAAAAA+TETG0w+gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q==">
                 Library System
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -73,59 +74,53 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <div class="container mt-4">
-        <h2>Library Management System</h2>
-
-        <!-- Show Books in Table Format -->
-
-    </div>
-    <div id="showBooks" , class="table-container">
-        <h3>Show Books</h3>
-
-            <table class="table table-hover thead-light">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Name</th>
-                        <th>Author</th>
-                        <th>Year Published</th>
-                        <th>Type</th>
-                        <!-- show the img instead of link -->
-                        <th>Picture<img id src=""></th>
-                    </tr>
-                </thead>
-                <tbody id="booksTableBody", style="height: [desired height]; overflow-y: scroll;">
-                    <!-- Book rows will be added here by JavaScript -->
-                </tbody>
-            </table>
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <h2>Library Management System</h2>
+            </div>
         </div>
     </div>
 
-        <div class="container"> 
-            <div id="searchBook" class="form-group mb-3">
-                <label for="book_name" class="form-label">Search Book By Name</label>
-                <input type="text" class="form-control" id="book_name" placeholder="Enter Book Name">
-                <button type="button" class="btn btn-primary" onclick="searchBook()">Search</button>
-                <!-- Show search result -->
-                <div id="searchResult" class="mt-3">
-                    <!-- Search results will be displayed here -->
+    <div id="showBooks" , class="table-container">
+        <table class="table table-hover thead-light">
+            <thead class="thead-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Author</th>
+                    <th>Year Published</th>
+                    <th>Type</th>
+                    <th>Picture<img id src=""></th>
+                </tr>
+            </thead>
+            <tbody id="booksTableBody" , style="height: [desired height]; overflow-y: scroll;">
+            </tbody>
+        </table>
+    </div>
+    </div>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div id="searchBook" class="form-group mb-3">
+                    <label for="book_name" class="form-label">Search Book By Name</label>
+                    <input type="text" class="form-control" id="book_name" placeholder="Enter Book Name">
+                    <button type="button" class="btn btn-primary" onclick="searchBook()">Search</button>
+                    <div id="searchResult" class="mt-3"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <h3>Loan Book</h3>
+                    <label for="name" class="form-label">Book Name</label>
+                    <input type="text" class="form-control" id="name" placeholder="Enter Book Name">
+                    <label for="Loan_date" class="form-label">Loan Date</label>
+                    <input type="date" class="form-control" id="Loan_date" placeholder="Enter Loan Date">
+                    <button type="button" class="btn btn-primary" onclick="loanBook()">Submit</button>
                 </div>
             </div>
         </div>
     </div>
-    <form>
-        <div class="mb-4">
-            <h3>loan book</h3>
-            <label for="name" class="form-label">Book Name</label>
-            <input type="text" class="form-control" id="name" placeholder="Enter Book Name">
-            <label for="customer_name" class="form-label">Customer Name</label>
-            <input type="text" class="form-control" id="customer_name" placeholder="Enter Customer Name">
-            <label for="Loan_date" class="form-label">Loan Date</label>
-            <input type="date" class="form-control" id="Loan_date" placeholder="Enter Loan Date">
-            <button type="button" class="btn btn-primary" onclick="loanBook()">Submit</button>
-    </form>
-
-    <!-- Main Script -->
     <script>
-        const MY_SERVER = 'http://localhost:5000';
+        const MY_SERVER = 'http://127.0.0.1:5000';
 
         async function fetchBooks() {
             try {
@@ -154,7 +149,7 @@
                         <td>${book.book_type}</td><td><img width=100 src="https://clipart-library.com/images/6Tpo6G8TE.jpg"></td>`;
                     booksTableBody.appendChild(row);
                 });
-            }   
+            }
             catch (error) {
                 console.error('Error fetching books:', error.message);
             }
@@ -222,7 +217,6 @@
         loanBook = async () => {
             try {
                 const bookName = document.getElementById('name')?.value;
-                const customerName = document.getElementById('customer_name')?.value;
                 const Loan_date = document.getElementById('LoanDate')?.value;
 
                 const accessToken = sessionStorage.getItem('jwtToken');
@@ -232,7 +226,6 @@
 
                 const response = await axios.post(`${MY_SERVER}/loan_book`, {
                     name: bookName,
-                    customer_name: customerName,
                     LoanDate: Loan_date
                 }, {
                     headers: {
