@@ -21,7 +21,7 @@ api = Api(app)
 CORS(app)
 app.secret_key = 'secret_secret_key'
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:MYSQLnur1996##@localhost/library' # change this to your own mysql database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/library' # change this to your own mysql database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
 db = SQLAlchemy(app)
@@ -90,6 +90,15 @@ class Loans(db.Model):
         self.LoanDate = LoanDate
         self.ReturnDate = ReturnDate
         
+
+class Friendship(db.Model):
+    requester_id = db.Column(db.Integer, db.ForeignKey('customer.id'), primary_key=True)
+    friend_id = db.Column(db.Integer, db.ForeignKey('customer.id'), primary_key=True)
+    status = db.Column(db.String(10), default='pending')  # Possible values: pending, accepted, rejected
+    def __init__(self, requester_id, friend_id, status):
+        self.requester_id = requester_id
+        self.friend_id = friend_id
+        self.status = status
 
 
 # set routes

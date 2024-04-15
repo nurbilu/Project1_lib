@@ -21,12 +21,10 @@
 - **Frontend:** Includes home, login, registration, loans, and logout pages.
 
 ## Future Developments
-- **Complete the Logout Functionality.**
 - **Enhance Endpoints:**
   - Modify `show_customers` to function as a friends list.
   - Alter `search_customer` to enable sending friend requests.
   - Create frontend for the social network library part
-- **Known Issue:** Logout not fully implemented.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.md file for details. - i wish
