@@ -7,7 +7,9 @@
     <title>Register</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="/favicon.png">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="icon" type="image/x-icon" href="/image.png">
     <style>
         body {
             display: flex;
@@ -72,19 +74,19 @@
                         <input type="password" id="password" placeholder="Password">
                         <button type="button" class="btn btn-primary" onclick="register()">Register</button>
                     </form>
-                    
+
                 </form>
             </div>
         </div>
     </div>
-    <script >
+    <script>
         const MY_SERVER = "http://127.0.0.1:5000";
         async function register() {
             const name = document.getElementById('name').value;
             const city = document.getElementById('city').value;
             const age = document.getElementById('age').value;
             const password = document.getElementById('password').value;
-        
+
             try {
                 const response = await axios.post(`${MY_SERVER}/register`, {
                     name,
@@ -92,13 +94,32 @@
                     age,
                     password
                 });
-        
-                console.log('Registration successful:', response.data);
+
+                document.getElementById('name').value = '';
+                document.getElementById('city').value = '';
+                document.getElementById('age').value = '';
+                document.getElementById('password').value = '';
+
+                Toastify({
+                    text: "Registration successful: " + response.data.message,
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                }).showToast();
             } catch (error) {
-                console.error('Error during registration:', error.response.data.message);
+                Toastify({
+                    text: "Error during registration: " + error.response.data.message,
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                }).showToast();
             }
         }
-        
+
     </script>
 </body>
 

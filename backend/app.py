@@ -4,6 +4,7 @@ from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity , decode_token , get_jwt
 import sqlite3
 from flask_cors import CORS ,cross_origin
+from flask_migrate import Migrate
 from datetime import date  , timedelta
 from sqlalchemy import Enum , and_ , or_
 from sqlalchemy.orm import class_mapper , joinedload
@@ -21,10 +22,11 @@ api = Api(app)
 CORS(app)
 app.secret_key = 'secret_secret_key'
 # app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///library.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/library' # change this to your own mysql database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:MYSQLnur1996##@localhost/library' # change this to your own mysql database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
 invalidated_tokens = set()  # Initialize as a set
@@ -91,14 +93,6 @@ class Loans(db.Model):
         self.ReturnDate = ReturnDate
         
 
-class Friendship(db.Model):
-    requester_id = db.Column(db.Integer, db.ForeignKey('customer.id'), primary_key=True)
-    friend_id = db.Column(db.Integer, db.ForeignKey('customer.id'), primary_key=True)
-    status = db.Column(db.String(10), default='pending')  # Possible values: pending, accepted, rejected
-    def __init__(self, requester_id, friend_id, status):
-        self.requester_id = requester_id
-        self.friend_id = friend_id
-        self.status = status
 
 
 # set routes
